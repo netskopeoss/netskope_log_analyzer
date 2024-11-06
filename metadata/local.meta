@@ -1,0 +1,97 @@
+[app/ui]
+owner = admin
+version = 8.2.4
+modtime = 1650967113.879769000
+
+[app/launcher]
+owner = admin
+version = 8.2.4
+modtime = 1650967113.880712000
+
+[app/package/check_for_updates]
+version = 8.2.4
+modtime = 1650967113.881025000
+
+[app/install/state]
+version = 8.2.4
+modtime = 1650966996.274941000
+
+[views/netskope_client]
+version = 8.2.4
+modtime = 1686527950.849001000
+
+[views/npa]
+version = 8.2.4
+modtime = 1670489786.572675000
+
+[views/transit_path_status]
+owner = admin
+version = 8.2.4
+modtime = 1669715527.488074000
+
+[views/iOS_devices]
+version = 9.2.0.1
+modtime = 1712214759.193168000
+
+[views/win_client]
+version = 9.2.0.1
+modtime = 1722307053.012396000
+
+[views/mac_client]
+version = 8.2.4
+modtime = 1707814197.648424000
+
+[views/publisher]
+version = 9.1.0.2
+modtime = 1691368697.133675000
+
+[views/npa_client]
+version = 9.2.0.1
+modtime = 1722836841.146762000
+
+[views/test_dashboard]
+owner = admin
+version = 9.3.1
+modtime = 1726646242.960366000
+
+[views/client]
+version = 9.3.1
+modtime = 1727341610.079844000
+
+[]
+access = read : [ * ], write : [ * ]
+export = system
+version = 9.3.1
+modtime = 1727088177.513833000
+
+[props/nsconfig]
+version = 9.3.1
+modtime = 1727311718.242853000
+
+[views/client-base]
+version = 9.3.1
+modtime = 1728052961.828596000
+
+[views/client-basic]
+version = 9.3.1
+modtime = 1730270977.596960000
+
+[views/update-check]
+version = 9.3.1
+modtime = 1728022293.118428000
+
+[views/client-version]
+version = 9.3.1
+modtime = 1729664006.188608000
+
+[views/client-steering]
+version = 9.3.1
+modtime = 1730277520.043256000
+
+[views/client-connection]
+version = 9.3.1
+modtime = 1730099508.779575000
+
+[views/client-npa]
+version = 9.3.1
+modtime = 1730797960.587823000

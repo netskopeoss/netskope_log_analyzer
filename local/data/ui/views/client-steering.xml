@@ -1,0 +1,895 @@
+
+<dashboard version="2" theme="dark">
+    <label>Client Steering information</label>
+    <description></description>
+    <definition><![CDATA[
+{
+	"dataSources": {
+		"ds_lMaikGeN": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_json1 host=\"$field1$\" sourcetype=nsconfig source=\"*nsexception.json\"\n| table ips*",
+				"queryParameters": {
+					"earliest": "0",
+					"latest": "now"
+				}
+			},
+			"name": "nsexception.json - ips search"
+		},
+		"ds_hQ3DTGtU": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"nsdebuglog\" \"detectClientLocation\" \n| rex field=_raw \"(?<MSG>Location:\\s.*)\"\n| timechart  count by MSG\n| appendcols [ search index=netskope_client1 host=\"$field1$\" sourcetype=\"nsdebuglog\" \"BypassAppMgr Bypassing connection by tunneling from process\"\n| rex field=_raw \"BypassAppMgr\\s(?<MSG1>.*process)\"\n| timechart count by MSG1 ]",
+				"queryParameters": {
+					"earliest": "0",
+					"latest": "now"
+				}
+			},
+			"name": "onprem status vs tunnel bypassed traffic"
+		},
+		"ds_IBqh7Cpp": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog  \"connected to remote host\" OR \"443 successfully\"\n| rex field=_raw \"(?<clientip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\)?+:\"\n| iplocation clientip | geostats latfield=lat longfield=lon count by clientip",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "Cluster map search"
+		},
+		"ds_hLXoE9n0": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog \"Tunnel established to gateway\"\n| rex field=_raw \"gateway:\\s(?<gateway>.*),\\spop:\\s(?<pop>.*),\\sassigned\\sip:\\s(?<gatewayip>.*),\\sCFW\\sstatus:\\s(?<CFWStatus>.*)\"\n| timechart count by pop",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "Connected PoPs - Timechart"
+		},
+		"ds_z0jEHn3e": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_json1 sourcetype=nsconfig host=\"$field1$\" source=\"*nsconfig.json\"\n| rename clientConfig.configurationName as 001.clientConfig.configurationName\n| eval 002.cache.lastClientUpdatedTimestamp=strftime('cache.lastClientUpdatedTimestamp', \"%Y/%m/%d %H:%M:%S\")\n| eval 003.cache.configUpdateTimestamp=strftime('cache.configUpdateTimestamp', \"%Y/%m/%d %H:%M:%S\")\n| rename \nclientConfig.clientUpdate* as 004.clientConfig.clientUpdate*,\nclientConfig.clientUpdate.useScheduledUpgrade* as 005.clientConfig.clientUpdate.useScheduledUpgrade*\n| table 00*\n| transpose 0 column_name=\"header\":\n| fields - \"column\"",
+				"queryParameters": {
+					"earliest": "0",
+					"latest": ""
+				}
+			},
+			"name": "nsconfig.json - update settings"
+		},
+		"ds_3BW1BQjy": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 sourcetype=nsdebuglog host=\"$field1$\"  \"clientStatusHandler client status message: \"\n| head 1\n| rex field=_raw \"clientStatusHandler\\sclient\\sstatus\\smessage:\\s(?<client_status>.*)\"\n| spath input=client_status\n| rename \nclient_status.host_info.device_make as \"01. Device Maker\", \nclient_status.host_info.device_model as \"02. Device Model\",\nclient_status.host_info.os as \"03. Host OS\",\nclient_status.host_info.os_version as \"04. Host OS version\",\nclient_status.host_info.hostname as \"05. Host name\",\nclient_status.host_info.macAddresses{} as \"06. Host MAC address\",\nclient_status.host_info.serialNumber as \"07. Host serial number\"\nclient_status.host_info.nsdeviceuid as \"08. Host nsdebviceuid\",\nclient_status.host_info.old_nsdeviceuid as \"09. old_nsdeviceuid0\",\n| eval \"10. Last update time\"=strftime('client_status.host_info.last_hostinfo_update_timestamp', \"%Y/%d/%m %H:%M:%S\")\n| table 0*, 1*\n| transpose\n",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "Client Status Handler"
+		},
+		"ds_7CpRsbSg": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\"\n| stats earliest(_time) AS Earliest, latest(_time) AS Latest by sourcetype\n| convert timeformat=\"%Y-%m-%d %H:%M:%S\" ctime(Earliest) ctime(Latest)",
+				"queryParameters": {
+					"earliest": "0",
+					"latest": ""
+				}
+			},
+			"name": "Log_timestamps"
+		},
+		"ds_6a2VT9JD": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 sourcetype=nsdebuglog\n| table host\n| dedup host\n| sort -host",
+				"queryParameters": {
+					"earliest": "0",
+					"latest": ""
+				}
+			},
+			"name": "Select Client log"
+		},
+		"ds_MRGQyb8i": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 sourcetype=nsdebuglog host=\"$field1$\" \"clientStatusHandler client status message: \"\n| rex field=_raw \"clientStatusHandler\\sclient\\sstatus\\smessage:\\s(?<client_status>.*)\"\n| spath input=client_status\n| rename client_status.client_version as version\n| stats count by version",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "Client Version"
+		},
+		"ds_vKQzwM2y_ds_MRGQyb8i": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 sourcetype=nsdebuglog host=\"$field1$\" \"Tunnel established to gateway\"\n| rex field=_raw \"pop:\\s(?<pop>.*),\\sassigned\"\n| table _raw, pop\n| stats count by pop",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "Connected PoPs"
+		},
+		"ds_mISQGdBb_ds_vKQzwM2y_ds_MRGQyb8i": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 sourcetype=nsdebuglog host=\"$field1$\" \"SteeringConfig Steering Config name:\"\n| rex field=_raw \"name:\\s(?<SteeringConf>.*)\\sTraffic\\sMode:\\s(?<TrafficMode>.*)\\sDynamic\\ssteering\\s(?<DynamicSteering>\\d)\"\n| eval DynamicSteering=if(DynamicSteering == \"1\", \"true\", \"false\")\n| stats count by SteeringConf",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "Steering Configration"
+		},
+		"ds_lmo8JfHa": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=STAUpdate \"Verbose logging\" OR \"Running installation\" OR \": Windows \" \n| sort _time \n| table  _raw\n",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "STAUpdate"
+		},
+		"ds_mJF3HiBv_ds_lmo8JfHa": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" (sourcetype=nsdebuglog OR sourcetype=stagentUI) \"Config new client version\" OR \"Config download path for client update\" OR \"Config trying to download\" OR \"client auto update\" OR \"starting =\"\n| table _raw\n| sort _raw",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "Update history"
+		},
+		"ds_4qbss7jP": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 sourcetype=nsdebuglog host=\"$field1$\" \"clientStatusHandler client status message: \"\n| sort -_raw\n| rex field=_raw \"clientStatusHandler\\sclient\\sstatus\\smessage:\\s(?<client_status>.*)\"\n| spath input=client_status\n| rename client_status.client_version as version\n| table _time, version\n| dedup consecutive=true version\n| sort _time",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "Client version table"
+		},
+		"ds_9ze5Vfw0": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\"  sourcetype=nsdebuglog \"post client rtt\" \n| rex field=_raw \"\\[(?<Client>.*)\\]:\\spost\\sclient\\srtt\\spop\\:(?<PoP>.*)\\sip\\:(?<GatewayIP>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\srtt:(?<RTT>\\d+)\"\n| eval Dst=Client.\"_\".PoP.\"_\".GatewayIP\n| stats avg(RTT) as AvgRTT by Dst\n| eval AvgRTT=round(AvgRTT, 2)\n| sort AvgRTT, Dst",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "GSLB RTT"
+		},
+		"ds_82A9aQrp_ds_9ze5Vfw0": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog \"Tunnel established to gateway\" OR \"Proxy health\"\n| sort _raw\n| rex field=_raw \"(?<Time>^\\d{4}\\/\\d{2}\\/\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*nsTunnel\\s(?<MSG>.*)\"\n| rex field=MSG \"CFW\\sstatus:\\s(?<CFWStatus>.*)\"\n| table Time, MSG,",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "Timeline"
+		},
+		"ds_v57DBEEj_ds_hLXoE9n0": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog \"SteeringConfig Steering Config name:\"\n| rex field=_raw \"(?<LogTime>\\d{4}\\/\\d{2}\\/\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*name:\\s(?<SteeringConf>.*)\\sTraffic\\sMode:\\s(?<TrafficMode>.*)\\sDynamic\\ssteering\\s(?<DynamicSteering>\\d)\"\n| sort _raw\n| eval DynamicSteering=if(DynamicSteering==1, \"true\", \"false\")\n| table LogTime, SteeringConf, TrafficMode, DynamicSteering",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "Traffic mode"
+		},
+		"ds_USxTAkrP_ds_9ze5Vfw0": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_json1 host=\"$field1$\" sourcetype=nsconfig source=\"*nsconfig.json\" AND NOT source=\"*prelogon_nsconfig.json\" \n| rename clientConfig.priority as 001.clientConfig.priority\n| rename clientConfig.configurationName* as 002.clientConfig.configurationName*\n| rename clientConfig.dynamicSteering as 003.clientConfig.dynamicSteering\n| rename onpremcheck* as 004.onpremcheck*\n| table 00*\n| transpose",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "Dynamic steering"
+		},
+		"ds_mzmNhkaL_ds_v57DBEEj_ds_hLXoE9n0": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog \"nsDnsResolver.cpp\" AND \"dnsResolver\" AND Failed\n| rex field=_raw \"(?<Gateway>gateway.*)\\sby\\s(?<DNS>.*)\" \n| eval DNS=DNS.\"_\".Gateway\n| stats count by DNS\n| sort -count",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "DNS failure"
+		},
+		"ds_7coO7GaE_ds_USxTAkrP_ds_9ze5Vfw0": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog   \"Connected to\" AND \"Successfully\"\n| rex field=_raw \"(?<GatewayIP>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\"\n| iplocation GatewayIP \n| geostats latfield=lat longfield=lon count by GatewayIP",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "GatewayIP - Map"
+		},
+		"ds_HuwBRM3v_ds_hLXoE9n0": {
+			"type": "ds.search",
+			"options": {
+				"query": "host=\"$field1$\" index=netskope_json1 sourcetype=nsconfig source=\"*nsconfig.json\" AND NOT source=\"*prelogon_nsconfig.json\"\n| rename \ngslb.host as \"001. gslb.host\",\ngslb.port as \"002. gslb.port\",\nnpa.gslb.port as \"003. gslb.port\",\nnpa.gslb.port as \"004. gslb.port\",\nnpa_gslb_client* as \"005. npa_gslb_client*\"\n| table 0*\n| transpose 0 column_name=\"header\":\n| fields - \"column\"",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "GSLB setting"
+		},
+		"ds_YSgjGLGw_ds_mzmNhkaL_ds_v57DBEEj_ds_hLXoE9n0": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog \"nsDnsResolver.cpp\" AND \"dnsResolver\" AND NOT Failed\n| rex field=_raw \"(?<Gateway>gateway.*)\\sby\\s(?<DNS>.*)\" \n| eval DNS=DNS.\"_\".Gateway\n| stats count by DNS\n| sort -count",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "DNS resolved"
+		},
+		"ds_QkgEDkPy_ds_mzmNhkaL_ds_v57DBEEj_ds_hLXoE9n0": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\"\nsourcetype=nsdebuglog \"nsDnsResolver.cpp\" AND \"dnsResolver\" AND \"*DNS\"\n| rex field=_raw \"(?<Gateway>gateway.*)\\sby\\s(?<DNS>.*)\" \n| eval MSG=DNS.\"_\".Gateway\n| timechart usenull=false count by MSG",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "DNS timechart"
+		},
+		"ds_4kBsRgNB_ds_mzmNhkaL_ds_v57DBEEj_ds_hLXoE9n0": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog \"nsDnsResolver.cpp\" AND \"dnsResolver\" AND Failed\n| rex field=_raw \"(?<Gateway>gateway.*)\\sby\\s(?<DNS>.*)\" \n| eval DNS=DNS.\"_\".Gateway\n| stats count by DNS",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "DNS failure copy 2"
+		},
+		"ds_gDs4JGJI_ds_v57DBEEj_ds_hLXoE9n0": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog \"SteeringConfig Steering Config name:\"\n| rex field=_raw \"name:\\s(?<SteeringConf>.*)\\sTraffic\\sMode:\\s(?<TrafficMode>.*)\\sDynamic\\ssteering\\s(?<DynamicSteering>\\d)\"\n| eval DynamicSteering=if(DynamicSteering == \"1\", \"true\", \"false\")\n| eval msg=\"Steering Config name: \".SteeringConf.\", Traffic mode: \".TrafficMode.\", DynamicSteering: \".DynamicSteering\n| stats count by msg",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "Traffic mode stats"
+		},
+		"ds_nmxlyfXa_ds_USxTAkrP_ds_9ze5Vfw0": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_json1 host=\"$field1$\" sourcetype=nsconfig source=\"*nssteering.json\"\n| eval 003_dynamic_steering_result = case(dynamic_steering == \"0\", \"disabled\", dynamic_steering == \"1\", \"enabled\", true(), \"Other\")\n| rename steering_config_name as 001_steering_config_name\n| rename traffic_mode as 002_traffic_mode\n| rename domain* as 003_domain* \n| rename domain_* as 004_domain_*\n| rename dynamic_steering as 005_dynamic_steering\n| rename firewall_traffic_mode as 006_firewall_traffic_mode\n| rename onprem_steering_method as 007_onprem_steering_method\n| rename offprem_steering_method as 008_offprem_steering_method\n| rename private_apps_* as 009_private_apps_*\n| table 00*\n| transpose",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "nssteering.json"
+		},
+		"ds_Isl1L7Js_ds_v57DBEEj_ds_hLXoE9n0": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog \"SteeringConfig Steering Config name:\"\n| rex field=_raw \"(?<LogTime>\\d{4}\\/\\d{2}\\/\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*name:\\s(?<SteeringConf>.*)\\sTraffic\\sMode:\\s(?<TrafficMode>.*)\\sDynamic\\ssteering\\s(?<DynamicSteering>\\d)\"\n| sort _raw\n| eval DynamicSteering=if(DynamicSteering==1, \"true\", \"false\")\n| table LogTime, SteeringConf, TrafficMode, DynamicSteering",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "Traffic mode copy 1"
+		},
+		"ds_fbl4J36O_ds_Isl1L7Js_ds_v57DBEEj_ds_hLXoE9n0": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"nsdebuglog\" \"detectClientLocation\" \n| rex field=_raw \"(?<MSG>Location:\\s.*)\"\n| timechart  count by MSG\n| appendcols [ search index=netskope_client1 host=\"$field1$\" sourcetype=\"nsdebuglog\" \"BypassAppMgr Bypassing connection by tunneling from process\"\n| rex field=_raw \"BypassAppMgr\\s(?<MSG1>.*process)\"\n| timechart count by MSG1 ]",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "detectClientLocation"
+		},
+		"ds_nyIc4PX7_ds_hQ3DTGtU": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog CTunnelMgr AND (\"trying Client on-prem detection\" OR \"dynamic steering enhancement\" OR \"On-prem status\")\n| rex field=_raw \"(?<LogTime>\\d{4}\\/\\d{2}\\/\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*CTunnelMgr\\s(?<MSG>.*)\"\n| table LogTime, MSG",
+				"queryParameters": {
+					"earliest": "0",
+					"latest": "now"
+				}
+			},
+			"name": "Onprem check log"
+		},
+		"ds_bItYdblF_ds_nyIc4PX7_ds_hQ3DTGtU": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog  \"dynamic steering enhancement:\" AND \"SteeringTrafficeMode\"\n| rex field=_raw \"(?<LogTime>\\d{4}\\/\\d{2}\\/\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*SteeringTrafficeMode:\\s(?<SteeringTrafficeMode>\\d),\\sonPremDynamicSteeringTrafficeMode:\\s(?<onPrem>\\d),\\soffPremDynamicSteeringTrafficeMode:\\s(?<offPrem>\\d),\\sonPremBypassOption:(?<onPremBypass>\\d),\\soffPremBypassOption:(?<offPremBypass>\\d),\\s\\sbypassOption=(?<bypassOption>\\d)\"\n| table LogTime, SteeringTrafficeMode, onPrem, offPrem, onPremBypass, offPremBypass, bypassOption\n| sort LogTime",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "Steering enhancement"
+		},
+		"ds_tFQJ5Y1y_ds_nyIc4PX7_ds_hQ3DTGtU": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog \"Tunneling flow from\"\n| rex field=_raw \"(?<LogTime>\\d{4}\\/\\d{2}\\/\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*process:\\s(?<Process>.*)\\sto\\s(?<HostIP>host:\\s.*)\"\n| stats values(HostIP) as HostIP count by Process\n| sort -count",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "Tunneling flow from"
+		},
+		"ds_ttnOtVXy_ds_lMaikGeN": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_json1 host=\"$field1$\" sourcetype=nsconfig source=\"*nsexception.json\"\n| table names*",
+				"queryParameters": {
+					"earliest": "0",
+					"latest": "now"
+				}
+			},
+			"name": "nsexception.json - names"
+		},
+		"ds_qzgOgbKS_ds_ttnOtVXy_ds_lMaikGeN": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_json1 host=\"$field1$\" sourcetype=nsconfig source=\"*nsexception.json\"\n| table fail_close*",
+				"queryParameters": {
+					"earliest": "0",
+					"latest": "now"
+				}
+			},
+			"name": "nsexception.json - failclose"
+		},
+		"ds_zgpmfW8y_ds_qzgOgbKS_ds_ttnOtVXy_ds_lMaikGeN": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_json1 host=\"$field1$\" sourcetype=nsconfig source=\"*nsexception.json\"\n| table steering_config_name*",
+				"queryParameters": {
+					"earliest": "0",
+					"latest": "now"
+				}
+			},
+			"name": "nsexception.json - failclose copy 1"
+		},
+		"ds_bPzLCYSQ_ds_tFQJ5Y1y_ds_nyIc4PX7_ds_hQ3DTGtU": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog \"BypassAppMgr bypassing flow to\"\n| rex field=_raw \"(?<LogTime>\\d{4}\\/\\d{2}\\/\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*(?<dhost>host:.*),\\sprocess:\\s(?<Process>.*),\\s(?<IP>Dest\\sIP.*)\"\n| eval Dst=dhost.\" \".IP\n| stats values(Dst) as Dst count by Process\n| sort -count",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "BypassAppMgr bypassing flow to"
+		}
+	},
+	"visualizations": {
+		"viz_yEPX18Iq": {
+			"type": "splunk.table",
+			"options": {
+				"count": 100,
+				"dataOverlayMode": "none",
+				"drilldown": "none",
+				"showRowNumbers": false,
+				"showInternalFields": false
+			},
+			"dataSources": {
+				"primary": "ds_lMaikGeN"
+			},
+			"title": "nsexception.json - ips"
+		},
+		"viz_BQPdbt1a": {
+			"type": "splunk.column",
+			"options": {
+				"yAxisAbbreviation": "auto",
+				"y2AxisAbbreviation": "auto",
+				"showRoundedY2AxisLabels": false,
+				"legendTruncation": "ellipsisMiddle",
+				"showY2MajorGridLines": true,
+				"xAxisLabelRotation": 0,
+				"xAxisTitleVisibility": "show",
+				"yAxisTitleVisibility": "show",
+				"y2AxisTitleVisibility": "show",
+				"yAxisScale": "linear",
+				"showOverlayY2Axis": false,
+				"y2AxisScale": "inherit",
+				"overlayFields": [
+					"\"Bypassing connection by tunneling from process\""
+				],
+				"dataValuesDisplay": "off",
+				"stackMode": "auto",
+				"showSplitSeries": false,
+				"showIndependentYRanges": false,
+				"legendDisplay": "bottom"
+			},
+			"dataSources": {
+				"primary": "ds_hQ3DTGtU"
+			},
+			"title": "onprem status vs tunnel bypassed traffic"
+		},
+		"viz_UOKGClkL": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "### Traffic mode history",
+				"backgroundColor": "#708794",
+				"fontSize": "extraLarge"
+			}
+		},
+		"viz_pFWd9BS1": {
+			"type": "splunk.table",
+			"dataSources": {
+				"primary": "ds_v57DBEEj_ds_hLXoE9n0"
+			},
+			"title": "Traffic mode history",
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false,
+			"options": {
+				"count": 50
+			}
+		},
+		"viz_sfVd5jAP": {
+			"type": "splunk.table",
+			"dataSources": {
+				"primary": "ds_USxTAkrP_ds_9ze5Vfw0"
+			},
+			"title": "nsconfig.json - Dynamic steering",
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false,
+			"options": {},
+			"context": {}
+		},
+		"viz_BlwX4Azv": {
+			"type": "splunk.singlevalueicon",
+			"options": {
+				"showValue": false,
+				"icon": "splunk-enterprise-kvstore://icon-load-balancer__4a4261a1-51e2-45aa-b89d-2911d1ceac62.svg"
+			}
+		},
+		"viz_KGE0Wd6E": {
+			"type": "splunk.table",
+			"dataSources": {
+				"primary": "ds_gDs4JGJI_ds_v57DBEEj_ds_hLXoE9n0"
+			},
+			"title": "Traffic mode count",
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false,
+			"options": {
+				"count": 5
+			}
+		},
+		"viz_MuePvtqM": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "### Onprem check & Dynamic steering",
+				"backgroundColor": "#708794",
+				"fontSize": "extraLarge"
+			}
+		},
+		"viz_Oh40dntk": {
+			"type": "splunk.table",
+			"dataSources": {
+				"primary": "ds_nmxlyfXa_ds_USxTAkrP_ds_9ze5Vfw0"
+			},
+			"title": "nssteering.json",
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false,
+			"options": {
+				"count": 14
+			}
+		},
+		"viz_iAnquG5k": {
+			"type": "splunk.table",
+			"dataSources": {
+				"primary": "ds_nyIc4PX7_ds_hQ3DTGtU"
+			},
+			"title": "Onprem check log",
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false,
+			"options": {
+				"count": 100,
+				"columnFormat": {
+					"LogTime": {
+						"width": 60
+					}
+				}
+			}
+		},
+		"viz_kWeWWmHq": {
+			"type": "splunk.table",
+			"dataSources": {
+				"primary": "ds_bItYdblF_ds_nyIc4PX7_ds_hQ3DTGtU"
+			},
+			"title": "Steering enhancement",
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false,
+			"options": {
+				"columnFormat": {
+					"LogTime": {
+						"width": 60
+					}
+				},
+				"count": 100
+			}
+		},
+		"viz_muYPdt8O": {
+			"type": "splunk.table",
+			"dataSources": {
+				"primary": "ds_tFQJ5Y1y_ds_nyIc4PX7_ds_hQ3DTGtU"
+			},
+			"title": "Tunneling flow",
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false,
+			"options": {
+				"count": 100,
+				"columnFormat": {
+					"LogTime": {
+						"width": 60
+					},
+					"Process": {
+						"width": 109
+					},
+					"HostIP": {
+						"width": 340
+					}
+				}
+			}
+		},
+		"viz_5IOi3LhA": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "### Tunneling flow from",
+				"backgroundColor": "#708794",
+				"fontSize": "extraLarge"
+			}
+		},
+		"viz_l671BH1P": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "### nsexception.json",
+				"backgroundColor": "#708794",
+				"fontSize": "extraLarge"
+			}
+		},
+		"viz_0ffUgM5f": {
+			"type": "splunk.table",
+			"options": {
+				"count": 100,
+				"dataOverlayMode": "none",
+				"drilldown": "none",
+				"showRowNumbers": false,
+				"showInternalFields": false
+			},
+			"dataSources": {
+				"primary": "ds_ttnOtVXy_ds_lMaikGeN"
+			},
+			"title": "nsexception.json - names"
+		},
+		"viz_ycEBatHj": {
+			"type": "splunk.table",
+			"options": {
+				"count": 100,
+				"dataOverlayMode": "none",
+				"drilldown": "none",
+				"showRowNumbers": false,
+				"showInternalFields": false
+			},
+			"dataSources": {
+				"primary": "ds_qzgOgbKS_ds_ttnOtVXy_ds_lMaikGeN"
+			},
+			"title": "nsexception.json - failclose"
+		},
+		"viz_TsyE54jL": {
+			"type": "splunk.table",
+			"options": {
+				"count": 100,
+				"dataOverlayMode": "none",
+				"drilldown": "none",
+				"showRowNumbers": false,
+				"showInternalFields": false
+			},
+			"dataSources": {
+				"primary": "ds_zgpmfW8y_ds_qzgOgbKS_ds_ttnOtVXy_ds_lMaikGeN"
+			},
+			"title": "nsexception.json - steering_config_name"
+		},
+		"viz_NkE8fLjz": {
+			"type": "splunk.table",
+			"dataSources": {
+				"primary": "ds_bPzLCYSQ_ds_tFQJ5Y1y_ds_nyIc4PX7_ds_hQ3DTGtU"
+			},
+			"title": "BypassAppMgr bypassing flow to exception host",
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false,
+			"options": {
+				"count": 100,
+				"columnFormat": {
+					"LogTime": {
+						"width": 60
+					},
+					"Process": {
+						"width": 60
+					},
+					"HostIP": {
+						"width": 340
+					},
+					"Dst": {
+						"width": 117
+					}
+				}
+			}
+		}
+	},
+	"inputs": {
+		"input_JBiR4uV0": {
+			"options": {
+				"defaultValue": "0,",
+				"token": "tr_n9GlxAEz"
+			},
+			"title": "Time Range Input Title",
+			"type": "input.timerange"
+		},
+		"input_rl8cqGDh": {
+			"options": {
+				"items": [],
+				"token": "field1"
+			},
+			"title": "Select Client log",
+			"type": "input.dropdown",
+			"dataSources": {
+				"primary": "ds_6a2VT9JD"
+			}
+		}
+	},
+	"layout": {
+		"type": "absolute",
+		"options": {
+			"width": 1440,
+			"height": 6000
+		},
+		"structure": [
+			{
+				"item": "viz_UOKGClkL",
+				"type": "block",
+				"position": {
+					"x": 10,
+					"y": 10,
+					"w": 1410,
+					"h": 1630
+				}
+			},
+			{
+				"item": "viz_pFWd9BS1",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 890,
+					"w": 1390,
+					"h": 330
+				}
+			},
+			{
+				"item": "viz_BlwX4Azv",
+				"type": "block",
+				"position": {
+					"x": 230,
+					"y": 10,
+					"w": 50,
+					"h": 30
+				}
+			},
+			{
+				"item": "viz_MuePvtqM",
+				"type": "block",
+				"position": {
+					"x": 10,
+					"y": 1810,
+					"w": 1410,
+					"h": 1310
+				}
+			},
+			{
+				"item": "viz_KGE0Wd6E",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 630,
+					"w": 1390,
+					"h": 240
+				}
+			},
+			{
+				"item": "viz_sfVd5jAP",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 1850,
+					"w": 1390,
+					"h": 410
+				}
+			},
+			{
+				"item": "viz_Oh40dntk",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 60,
+					"w": 1390,
+					"h": 550
+				}
+			},
+			{
+				"item": "viz_BQPdbt1a",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 2720,
+					"w": 1390,
+					"h": 380
+				}
+			},
+			{
+				"item": "viz_iAnquG5k",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 2280,
+					"w": 1390,
+					"h": 420
+				}
+			},
+			{
+				"item": "viz_kWeWWmHq",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 1240,
+					"w": 1390,
+					"h": 370
+				}
+			},
+			{
+				"item": "viz_5IOi3LhA",
+				"type": "block",
+				"position": {
+					"x": 10,
+					"y": 3140,
+					"w": 1410,
+					"h": 860
+				}
+			},
+			{
+				"item": "viz_muYPdt8O",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 3180,
+					"w": 1390,
+					"h": 410
+				}
+			},
+			{
+				"item": "viz_l671BH1P",
+				"type": "block",
+				"position": {
+					"x": 10,
+					"y": 4020,
+					"w": 1410,
+					"h": 790
+				}
+			},
+			{
+				"item": "viz_yEPX18Iq",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 4420,
+					"w": 690,
+					"h": 380
+				}
+			},
+			{
+				"item": "viz_0ffUgM5f",
+				"type": "block",
+				"position": {
+					"x": 720,
+					"y": 4420,
+					"w": 680,
+					"h": 380
+				}
+			},
+			{
+				"item": "viz_ycEBatHj",
+				"type": "block",
+				"position": {
+					"x": 720,
+					"y": 4050,
+					"w": 680,
+					"h": 350
+				}
+			},
+			{
+				"item": "viz_TsyE54jL",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 4050,
+					"w": 690,
+					"h": 350
+				}
+			},
+			{
+				"item": "viz_NkE8fLjz",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 3600,
+					"w": 1390,
+					"h": 380
+				}
+			}
+		],
+		"globalInputs": [
+			"input_rl8cqGDh",
+			"input_JBiR4uV0"
+		]
+	},
+	"title": "Client Steering information",
+	"description": "",
+	"defaults": {
+		"dataSources": {
+			"ds.search": {
+				"options": {
+					"queryParameters": {
+						"latest": "$global_time.latest$",
+						"earliest": "$global_time.earliest$"
+					}
+				}
+			}
+		}
+	}
+}
+    ]]></definition>
+    <meta type="hiddenElements"><![CDATA[
+{
+	"hideEdit": false,
+	"hideOpenInSearch": false,
+	"hideExport": false
+}
+    ]]></meta>
+</dashboard>

@@ -1,0 +1,3175 @@
+<form version="1.1" theme="dark">
+  <label>iOS devices</label>
+  <fieldset submitButton="false">
+    <input type="dropdown" token="field1">
+      <label>Client Log</label>
+      <fieldForLabel>host</fieldForLabel>
+      <fieldForValue>host</fieldForValue>
+      <search>
+        <query>index=netskope_client1 sourcetype=nsappui
+| table host
+| dedup host
+| sort -host</query>
+        <earliest>0</earliest>
+        <latest></latest>
+      </search>
+    </input>
+    <input type="time" token="field2">
+      <label></label>
+      <default>
+        <earliest>0</earliest>
+        <latest></latest>
+      </default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>■■Basic Information■■</title>
+      <table>
+        <title>The log files contain the information of the time rage below</title>
+        <search>
+          <query>index=netskope_client1 host="$field1$" 
+| stats earliest(_time) AS Earliest, latest(_time) AS Latest by sourcetype
+| convert timeformat="%Y-%m-%d %H:%M:%S" ctime(Earliest) ctime(Latest)</query>
+          <earliest>0</earliest>
+          <latest></latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">100</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <table>
+        <title>Host machine information</title>
+        <search>
+          <query>index=netskope_client1 sourcetype=nsdebuglog host="$field1$" "clientStatusHandler client status message: "
+| rex field=_raw "clientStatusHandler\sclient\sstatus\smessage:\s(?&lt;client_status&gt;.*)"
+| spath input=client_status
+| table _time, client_status.*
+| rename client_status.* as *
+| rename status as Client_status
+| eval _time=timestamp
+| table host_info*
+| head 1
+| transpose</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">100</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <chart>
+        <title>Client Version</title>
+        <search>
+          <query>index=netskope_client1 sourcetype=nsdebuglog host="$field1$" "clientStatusHandler client status message: "
+| rex field=_raw "clientStatusHandler\sclient\sstatus\smessage:\s(?&lt;client_status&gt;.*)"
+| spath input=client_status
+| stats count by client_status.client_version</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+    <panel>
+      <chart>
+        <title>NS GW Connected POP</title>
+        <search>
+          <query>index=netskope_client1 sourcetype=nsdebuglog host="$field1$" "Tunnel established to gateway"
+| rex field=_raw "pop:\s(?&lt;pop&gt;.*),\sassigned"
+| table _raw, pop
+| stats count by pop</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+    <panel>
+      <chart>
+        <title>NS GW IP</title>
+        <search>
+          <query>index=netskope_client1 sourcetype=nsdebuglog host="$field1$" "New host IP to monitor"
+| rex field=_raw "monitor:\s(?&lt;NS_GW&gt;\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"
+| stats count by NS_GW</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+    <panel>
+      <chart>
+        <title>NPA GW IP</title>
+        <search>
+          <query>index=netskope_client1 sourcetype=npadebuglog host="$field1$" "TLS client established connection"
+| rex field=_raw "server:(?&lt;NPA_GW&gt;.*):443"
+| stats count by NPA_GW</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Power Cable vs Battery</title>
+      <chart>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "Stats Battery"
+| rex field=_raw "Stats\sBattery\s(?&lt;PowerCable&gt;.*),\slevel\s(?&lt;Battery&gt;.*)%,\schange\s.*task\senergy\s(?&lt;TaskEnargy&gt;[\d|\.]*)Wh,"
+| timechart span=5m avg(Battery) as Battery count by PowerCable</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">1</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.overlayFields">avg(TaskEnargy)</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>Battery vs Task Energy</title>
+      <chart>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "Stats Battery"
+| rex field=_raw "Stats\sBattery\s(?&lt;PowerCable&gt;.*),\slevel\s(?&lt;Battery&gt;.*)%,\schange\s.*task\senergy\s(?&lt;TaskEnergy&gt;[\d|\.]*)Wh,"
+| bin span=10m _time
+| stats max(Battery) as Battery,  max(TaskEnergy) as TaskEnergy BY _time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">1</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.overlayFields">TaskEnergy</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Interface and IP</title>
+      <table>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "Best route interface" AND NOT new
+| rex field=_raw "interface\s(?&lt;interface&gt;.*)\sip\s(?&lt;IP&gt;.*)"
+| stats values(IP) by interface</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Steering config history</title>
+      <table>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "SteeringConfig Steering Config name:"
+| rex field=_raw "name:\s(?&lt;SteeringConf&gt;.*)\sTraffic\sMode:\s(?&lt;TrafficMode&gt;.*)\sDynamic\ssteering\s(?&lt;DynamicSteering&gt;\d)"
+| table _time, SteeringConf, TrafficMode, DynamicSteering
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">3</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>nsconfig.json</title>
+      <table>
+        <title>Client config name, NPA GW, On-Prem, Dynamic steering</title>
+        <search>
+          <query>index=json1 sourcetype=nsconfig source="*nsconfig.json" host="$field1$"  
+| rename clientConfig.* as * 
+| eval source=replace(source, "/home/netskope/logs/", "")
+| table source, configurationName, nsgw.host,  nsgw.backupHost, npa.tenant, npa.domain, dynamicSteering, onpremcheck.*
+| rename onpremcheck.* as *
+| sort source</query>
+          <earliest>0</earliest>
+          <latest></latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">100</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Configuration history</title>
+      <event>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsAppUI "updateValue"
+| rex field=_raw "Netskope\[(?&lt;Handler&gt;\d*\:\d*)\]"
+| transaction Handler</query>
+          <earliest>0</earliest>
+          <latest></latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">2</option>
+        <option name="list.drilldown">none</option>
+        <option name="list.wrap">1</option>
+        <option name="maxLines">5</option>
+        <option name="raw.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">0</option>
+        <option name="table.drilldown">all</option>
+        <option name="table.sortDirection">asc</option>
+        <option name="table.wrap">1</option>
+        <option name="type">raw</option>
+      </event>
+    </panel>
+    <panel>
+      <title>Latest VPN Profile</title>
+      <table>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsAppUI "VPN profiles: [{"
+| sort -_time
+| table _raw</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">1</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Internet Security</title>
+      <table>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsAppUI "InternetSecurityGroup"
+| rex field=_raw "(?&lt;MSG&gt;InternetSecurityGroup.*)"
+| table _time, MSG
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+    <panel>
+      <title>Private app</title>
+      <table>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsAppUI "PrivateAppsGroup"
+| rex field=_raw "(?&lt;MSG&gt;PrivateAppsGroup.*)"
+| table _time, MSG
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Client status history</title>
+      <table>
+        <title>the information from nsdebuglog.log client status message</title>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "clientStatusHandler client status message: "
+| rex field=_raw "clientStatusHandler\sclient\sstatus\smessage:\s(?&lt;client_status&gt;.*)"
+| spath input=client_status
+| table _time, client_status.*
+| rename client_status.* as *
+| rename status as Client_status
+| eval _time=timestamp
+| table _time, client_version, actor, Client_status, event, npa_status,  device_classification_status, host_info*
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">5</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Client version and Autoupdate</title>
+      <table>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog ("config.cpp" AND ("downloadurl" OR "new client" OR "auto update")) OR "======" 
+| rex field=_raw "[cpp|mm]:\d+\s(?&lt;Msg&gt;.*)"
+| table _time, Msg
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>stAgentService</title>
+      <table>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog sourcetype=nsdebuglog "stAgentService"
+| rex field=_raw "stAgentService\s(?&lt;MSG&gt;.*)"
+| table _time, MSG
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+      </table>
+    </panel>
+    <panel>
+      <title>stAgentUI longpoll - Tunnel ID, Current user, and Longpoll status per user</title>
+      <event>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "stAgentUI" AND ("impersonate.cpp" OR "tunnel_id" OR "TunnelID" OR "crypto-nonce")
+| rex field=_raw "stAgentUI\s(?&lt;Hex&gt;[a-z|0-9]{4,5}\s[a-z|0-9]{4,5})\sinfo"
+| transaction Hex</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">3</option>
+        <option name="list.drilldown">none</option>
+        <option name="raw.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="table.drilldown">none</option>
+        <option name="type">raw</option>
+      </event>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Session ID + Config location</title>
+      <table>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "SessionId" AND "user config location"
+| rex field=_raw "\d{2}\.\d{3,6}\s(?&lt;Hex&gt;.+\s[a-z|0-9]{4,6}\s[a-z|0-9]{4,6})\sinfo.*SessionId\s\[(?&lt;SessionId&gt;\d+).*location:\s(?&lt;ConfigLocation&gt;.*)"
+| table _time, Hex, SessionId, ConfigLocation
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>Session ID vs Tunnel ID</title>
+      <table>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "TunnelID" 
+| rex field=_raw "sessId\s(?&lt;sessId&gt;\d+)\]\sTunnelID:\s(?&lt;TunnelID&gt;.*)"
+| table _time, sessId, TunnelID
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>NSCOM2 message - icon in the system tray</title>
+      <table>
+        <title>Check error code https://learn.microsoft.com/en-us/windows/win32/winsock/windows-sockets-error-codes-2</title>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "NSCom2.cpp"
+| rex field=_raw "NSCOM2\s(?&lt;NSCOM2&gt;.*)"
+| rex field=_raw "failed\s(?&lt;Error&gt;\d+)"
+| table _time, NSCOM2, Error
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>Process exited</title>
+      <table>
+        <title>Exited Process history</title>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "exited" OR "exiting" OR "stoppin" OR "Exception received" OR "crash dump"
+| rex field=_raw "[cpp|mm]:\d+\s(?&lt;Msg&gt;.*)"
+| table _time, Msg
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>nsuserconfig.json</title>
+      <table>
+        <search>
+          <query>index=json1 host="$field1$" sourcetype=nsconfig source=*nsuserconfig.json
+| table nsUserConfig*
+| transpose</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>Config m_enablePerUserConfig</title>
+      <table>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype="nsdebuglog"  "Config m_*"
+| rex field=_raw "\sConfig\s(?&lt;Param&gt;.*)"
+| table _time, Param
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">4</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>System Proxy setting</title>
+      <table>
+        <title>Autodetect, PAC File URL, Static setting</title>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog  "proxy.cpp" AND ("Proxy settings: auto detect" OR "file url")
+| rex field=_raw "file\surl\s(?&lt;PAC_URL&gt;.*)"
+| rex field=_raw "Proxy settings:\sauto\sdetect\s(?&lt;autodetect&gt;\d),\sPAC\s(?&lt;PAC_URL&gt;.*),\sstatic\s(?&lt;staticProxy&gt;.*)"
+| table _time, autodetect, PAC_URL, staticProxy
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">5</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>Proxy in Pac file - Win: Proxies string detected, Mac: ProxyInfoReader</title>
+      <table>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "proxy.cpp" AND ("Proxies string detected" OR "Proxy Name")
+| rex field=_raw "proxy\.cpp:\d+\s(?&lt;ProxyString&gt;.*)"
+| table _time, ProxyString
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Interoparate with Proxy</title>
+      <table>
+        <search>
+          <query>index=json1 host="$field1$" source="*nsconfig.json"
+| table clientConfig.externalProxy*, clientConfig.externalProxy</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">100</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>Final Proxy count - Total active proxy</title>
+      <table>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "Total active proxy"
+| rex field=_raw "active\sproxy\sCount\s(?&lt;ActiveProxyCount&gt;.*),[\s\S]+Total\sproxy\sCount\s(?&lt;TotalProxyCount&gt;.*),\sFull\sProxy\sList\s:(?&lt;FullProxyList&gt;.*)"
+| table _time, ActiveProxyCount, TotalProxyCount, FullProxyList
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">5</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>StagentUI User based Proxy</title>
+      <table>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "stAgentUI" AND ("nsImpersonate Current user" OR "Total proxy Count")
+| rex field=_raw "\d{2}\.\d{3}\s(?&lt;Hex&gt;.+\s[a-z|0-9]{4,5}\s[a-z|0-9]{4,5})\s(?&lt;MSG&gt;.*)"
+| stats values(MSG)  by Hex</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">5</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>TLS Using proxy - Tunnel was established from On-Prem proxy</title>
+      <table>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "tunnel.cpp" AND "TLS Using proxy"
+| rex field=_raw "Using\sproxy\s(?&lt;Msg&gt;.*)\sfor"
+| table _time, Msg
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Supportability params - Operation from WebUI</title>
+      <table>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "Config supportability params json"
+| rex field=_raw "json:\s(?&lt;params&gt;.*)"
+| spath input=params
+| eval ClientStatus=case(clientStatus=="0", "AdminDisableFromWebUI(0)", clientStatus=="1", "NoDirectionFromAdmin(1)", clientStatus=="2", "AdminEnabledFromWebUI(2)", 1=1, clientStatus)
+| table _time, status, ClientStatus, failCloseStatus, logStatus,useConfigVersion, configVersion
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">5</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>Check other steering method</title>
+      <table>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog  "amCheck.cpp:"
+| rex field=_raw "amCheck\.cpp:\d+\s(?&lt;MSG&gt;.*)"
+| table _time, MSG
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">5</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>tunnel status by sessionid</title>
+      <table>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog sourcetype=nsdebuglog "Caching client status" OR "Best route interface" OR "Network State Changed" OR "TLS machine ip" OR "stAgentService" OR "Preferred IP address changed" OR "Tunnel established to gateway"
+| rex field=_raw "sessId\s(?&lt;SessId&gt;\d+).*event:\s(?&lt;event&gt;.*),\sclient\sstatus:\s(?&lt;ClientStatus&gt;.*),\sactor:\s(?&lt;Actor&gt;.*),\stime:\s(?&lt;time&gt;\d+),\sservice:\s(?&lt;service&gt;.*)"
+| rex field=_raw "networkMonitor\s(?&lt;event1&gt;Best\sroute\sinterface\s.*)"
+| rex field=_raw "event\sis\s(?&lt;event2&gt;.*)"
+| rex field=_raw "TLS\s(?&lt;event3&gt;machine\sip:\s.*)"
+| rex field=_raw "stAgentService\s(?&lt;event4&gt;.*)"
+| rex field=_raw "(?&lt;event5&gt;Preferred\sIP.*)"
+| rex field=_raw "Tunnel\sestablished\sto\sgateway:\s(?&lt;event6&gt;.*)"
+| eval event=if(isnull('event'), event1, event)
+| eval event=if(isnull('event'), event2, event)
+| eval event=if(isnull('event'), event3, event)
+| eval event=if(isnull('event'), event4, event)
+| eval event=if(isnull('event'), event5, event)
+| eval event=if(isnull('event'), event6, event)
+| eval _time=if(isnull('time'), _time, time)
+| table _time, _SessId, event, ClientStatus, Actor
+| sort _time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">15</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Event</title>
+      <chart>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "Caching client status" OR "AOAC device" OR "Network State Changed" OR "TLS machine ip"
+| rex field=_raw "sessId\s(?&lt;SessId&gt;\d+).*event:\s(?&lt;event&gt;.*),\sclient\sstatus:\s(?&lt;ClientStatus&gt;.*),\sactor:\s(?&lt;Actor&gt;.*),\stime:\s(?&lt;time&gt;\d+)"
+| rex field=_raw "AOAC\sdevice\s(?&lt;event1&gt;.*)"
+| rex field=_raw "event\sis\s(?&lt;event2&gt;.*)"
+| rex field=_raw "TLS\s(?&lt;event3&gt;machine\sip:\s.*)"
+| eval event=if(isnull('event'), event1, event)
+| eval event=if(isnull('event'), event2, event)
+| eval event=if(isnull('event'), event3, event)
+| eval _time=if(isnull('time'), _time, time)
+| timechart span=15m count by event</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Interface and IP</title>
+      <table>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype="nsdebuglog" "networkMonitor.cpp" AND ("Pref src ip" OR "Best route interface")
+| rex field=_raw "networkMonitor\.cpp:\d+\s(?&lt;MSG&gt;.*)"
+| table _time, MSG
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+      </table>
+    </panel>
+    <panel>
+      <title>Machine IP - Tunnel Source IP</title>
+      <table>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype="nsdebuglog" "TLS machine ip"
+| rex field=_raw "TLS\smachine\sip:\s(?&lt;MachineIP&gt;.*)"
+| table _time, MachineIP
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>dnsResolver Primary(EDNS) -&gt; Secondary(EDNS) -&gt; Primary(LDNS) -&gt; Seconday(LDNS)</title>
+      <table>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "nsDnsResolver.cpp" AND "dnsResolver"
+| rex field=_raw "dnsResolver\s(?&lt;MSG&gt;.*)"
+| table _time, MSG
+| sort -_time</query>
+          <earliest>1611907403.000</earliest>
+          <latest></latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>Success to resolv GW - timechart</title>
+      <chart>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "nsDnsResolver.cpp" AND "dnsResolver"
+| rex field=_raw "dnsResolver\s(?&lt;MSG&gt;.*)"
+| timechart span=30m count by MSG</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>How NS client connected to NS GW</title>
+      <table>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "nsssl.cpp" AND "remote host" AND NOT "msec"
+| rex field=_raw "nsssl\s(?&lt;TLStype&gt;.*)\sremote\shost\s(?&lt;Host&gt;.*)resolved\sto\s(?&lt;IP&gt;.*),\sport\s(?&lt;Port&gt;\d+)"
+| rex field=_raw "[cpp|mm]:\d+\snsssl\s(?&lt;Msg&gt;.*)"
+| eval Host=if(isnull('Host'), Msg, 'Host')
+| table _time, TLStype, Host IP, Port
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>How NS client connected to NS GW</title>
+      <chart>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "nsssl.cpp" AND "remote host" AND NOT "msec"
+| rex field=_raw "nsssl\s(?&lt;TLStype&gt;.*)\sremote\shost\s(?&lt;Host&gt;.*)resolved\sto\s(?&lt;IP&gt;.*),\sport\s(?&lt;Port&gt;\d+)"
+| rex field=_raw "[cpp|mm]:\d+\snsssl\s(?&lt;Msg&gt;.*)"
+| eval Host=if(isnull('Host'), Msg, 'Host')
+| timechart span=30m count by IP  usenull=f</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Mapped IP address - nsgwpool</title>
+      <table>
+        <search>
+          <query>index=netskope_client1 host="$field1$" "Tunnel established to gateway"
+| rex field=_raw "gateway:\s(?&lt;gateway&gt;.*),\spop:\s(?&lt;pop&gt;.*),\sassigned\sip:\s(?&lt;gatewayip&gt;.*),\sCFW\sstatus:\s(?&lt;CFWStatus&gt;.*)"
+| eval CFWStatus = if(CFWStatus==1, "True", "False")
+| table _time, pop, gateway, gatewayip, CFWStatus
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>Connected POP</title>
+      <chart>
+        <search>
+          <query>index=netskope_client1 host="$field1$" "Tunnel established to gateway"
+| rex field=_raw "gateway:\s(?&lt;gateway&gt;.*),\spop:\s(?&lt;pop&gt;.*),\sassigned\sip:\s(?&lt;gatewayip&gt;.*),\sCFW\sstatus:\s(?&lt;CFWStatus&gt;.*)"
+| timechart span=30m count by pop</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Fail close activated</title>
+      <event>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "fail close"</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="list.drilldown">none</option>
+        <option name="list.wrap">1</option>
+        <option name="maxLines">5</option>
+        <option name="raw.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">0</option>
+        <option name="table.drilldown">all</option>
+        <option name="table.sortDirection">asc</option>
+        <option name="table.wrap">1</option>
+        <option name="type">raw</option>
+      </event>
+    </panel>
+    <panel>
+      <title>PoP Fail over</title>
+      <table>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "Old remote host"
+| rex field=_raw "Old\sremote\shost:\s(?&lt;Old&gt;.*),\srtt:\s(?&lt;OldRTT&gt;\d+)\sms,\snew\sremote\shost:\s(?&lt;New&gt;.*),\srtt:\s(?&lt;NewRTT&gt;\d+)\sms"
+| table _time, Old, OldRTT, New, NewRTT
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>TLS error reason - More on the Network side issue. Error code https://docs.microsoft.com/en-us/windows/win32/winsock/windows-sockets-error-codes-2</title>
+      <chart>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "nsssl.cpp" AND "failed" AND "err"
+| rex field=_raw "err:\s(?&lt;ErrorCode&gt;\d+)$"
+| eval ErrorMsg=case(
+ErrorCode==10013, "WSAEACCES",
+ErrorCode==10060, "WSAETIMEDOUT",
+true(), ErrorCode)
+| timechart span=60m count by ErrorCode</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>Failed to establish tunnel to gateway</title>
+      <table>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "Failed to establish tunnel to gateway"
+| rex field=_raw "gateway:\s(?&lt;gateway&gt;.*),\spop:\s(?&lt;pop&gt;.*),\sflag:\s(?&lt;Flag&gt;.*),\serrStr:\s(?&lt;Msg&gt;.*)"
+| table _time, gateway, pop, Flag, Msg
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Route Change</title>
+      <chart>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype="nsdebuglog"  "networkMonitor.cpp" AND "old"
+| rex field=_raw "networkMonitor\.cpp:\d*\s(?&lt;Result&gt;.*)"
+| timechart span=15m count by Result</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.chart">column</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>Client - No default route found</title>
+      <chart>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype="nsdebuglog" "networkMonitor.cpp" AND ("route found" OR "Failed to get interface")
+| rex field=_raw "networkMonitor\.cpp:\d*\s(?&lt;Result&gt;.*)"
+| timechart span=15m count by Result</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Client on-prem check host</title>
+      <table>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype="nsdebuglog"  "tunnelMgr.cpp" AND "Client on-prem"
+| rex field=_raw "[cpp|mm]:\d+\s(?&lt;Msg&gt;.*)"
+| table _time, Msg
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">5</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>On-Prem detection</title>
+      <table>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype="nsdebuglog"  "location is detected"
+| rex field=_raw "CTunnelMgr\s(?&lt;olocation&gt;.*)\slocation"
+| table _time, olocation
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">5</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Tunnel Ping lost</title>
+      <chart>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype="nsdebuglog" "tunnel.cpp" AND "Did not"
+| rex field=_raw "tunnel.cpp\:\d+\s(?&lt;MSG&gt;.*)"
+| timechart span=60m count by MSG</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">log</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>RTT - CTunnelMgr RTT to</title>
+      <chart>
+        <search>
+          <query>index=netskope_client1 host="$field1$" "CTunnelMgr RTT to:"
+| rex field=_raw "RTT\sto:\s(?&lt;IPaddress&gt;.*)\sis:\s(?&lt;msec&gt;[0-9]{1,})ms"
+| timechart span=60m max(msec) by IPaddress</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>NPA - DNS resolution - npadebuglog.log</title>
+      <chart>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=npadebuglog "Resolved gateway.npa.goskope.com as " OR "Unable to resolve hostname"
+| rex field=_raw ":0x0\s(?&lt;Result&gt;.*)"
+| timechart span=30m count by Result</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisY.scale">log</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>NPA - Name resolution - nsdebuglog.log</title>
+      <chart>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "nsDnsResolver.cpp" AND  "gateway.npa"
+| rex field=_raw "nsDnsResolver.cpp:\d+\sdnsResolver\s(?&lt;Result&gt;.*)"
+| timechart span=15m count by Result</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">log</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>NPA - TLS Connection</title>
+      <table>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=npadebuglog "TLS client established connection"
+| rex field=_raw "TLS\sversion:(?&lt;TLSversion&gt;.+)\sserver:(?&lt;Server&gt;.*)\scipher:(?&lt;Cipher&gt;.*)"
+| table _time, TLSversion, Server, Cipher
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">5</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>NPA - TLS Connection</title>
+      <chart>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=npadebuglog "TLS client established connection"
+| rex field=_raw "(?&lt;MSG&gt;TLS\sversion.*)"
+| timechart span=30m count by MSG</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.chart">column</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>NS GW Tunnel lifetime</title>
+      <table>
+        <title>between Inserting sock/Closing sock</title>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog  "nsssl.cpp" AND ("Inserting sock" OR "Closing sock")
+| rex field=_raw "\ssock\s(?&lt;Sock&gt;\d+)"
+| transaction Sock startswith="Inserting" endswith="Closing"
+| eval DURATION_MINS=round(duration /60)
+| table _time, Sock, DURATION_MINS
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+    <panel>
+      <title>NPA Handler lifetime</title>
+      <table>
+        <title>Sterting handler/Handler stopped</title>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=npadebuglog ("Starting handler" OR "Handler stopped") 
+| rex field=_raw "(?&lt;Handler&gt;[0-9|A-F|a-f]{8,12})[,|\)]"
+| transaction Handler startswith="Starting" endswith="stopped"
+| eval myduration=round(duration /60)
+| table _time, Handler, myduration
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>NPA Handler timeline from start to end</title>
+      <event>
+        <title>This indicates when the client tried to start tunnel and when it ended</title>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=npadebuglog ("Starting handler" OR "Handler stopped") OR ("neClientTransportHander.cpp" AND "error")
+| rex field=_raw "0x?(?&lt;Handler&gt;[0-9|A-F|a-f]{7})" 
+| eval CHandler = lower(Handler)
+| transaction CHandler startswith="Starting" endswith="stopped"</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">5</option>
+        <option name="list.drilldown">none</option>
+        <option name="list.wrap">1</option>
+        <option name="maxLines">5</option>
+        <option name="raw.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">0</option>
+        <option name="table.drilldown">none</option>
+        <option name="table.sortDirection">asc</option>
+        <option name="table.wrap">1</option>
+        <option name="type">raw</option>
+      </event>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>NPA - Tunnel disconnected  ("Cleaning up l3clientChannel" OR "Dispatcher is winding down. Let's clear everything")</title>
+      <chart>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=npadebuglog "Dispatcher is winding down" OR "Cleaning up l3clientChannel"
+| rex field=_raw "0x[0-9|a-z]+\s(?&lt;Msg&gt;.*)"
+| timechart span=15m count by Msg</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>RestAPI Fail - timechart</title>
+      <chart>
+        <title>nsdebuglog.log</title>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "restapi Failed to download" 
+| rex field=_raw "Failed\sto\sdownload\s(?&lt;Content&gt;.*),\sError:\s(?&lt;ErrorCode&gt;.*)"
+| eval ErrorMsg=case(
+ErrorCode=="0", "NS_RESULT_OK",
+ErrorCode=="-1", "NS_RESULT_ERR",
+ErrorCode=="-2", "NS_CURL_ERROR",
+ErrorCode=="-3", "NS_FAILED_TO_OPEN_FILE",
+ErrorCode=="-4", "NS_HTTP_ERROR",
+ErrorCode=="-5", "NS_PROXY_AUTH_ERROR",
+ErrorCode=="-6", "NS_INSUFFICIENT_BUFFER_ERROR",
+true(), ErrorCode)
+| eval Result = ErrorMsg." - ".Content
+| timechart span=15m count by Result</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>2001:4860:4860::8888 reachability</title>
+      <chart>
+        <search>
+          <query>index=netskope_client1  host="$field1$" sourcetype="nsdebuglog" "2001:4860:4860::8888" AND "reachable"
+| rex field=_raw "2001:4860:4860::8888\sis\s(?&lt;Result&gt;.*)"
+| timechart span=15m count by Result</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Steering Conf, Traffic Mode configuration change history</title>
+      <table>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "SteeringConfig Steering Config name:"
+| rex field=_raw "name:\s(?&lt;SteeringConf&gt;.*)\sTraffic\sMode:\s(?&lt;TrafficMode&gt;.*)\sDynamic\ssteering\s(?&lt;DynamicSteering&gt;\d)"
+| table _time, SteeringConf, TrafficMode, DynamicSteering
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">5</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>Web/FW mode</title>
+      <table>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "Dynamic Web Mode"
+| rex field=_raw "Dynamic\sWeb\sMode\s=\s(?&lt;WebMode&gt;\d),\sFirewall\sMode\s=\s(?&lt;FirewallMode&gt;\d)"
+| table _time, WebMode, FirewallMode
+| sort _time
+| dedup consecutive=true WebMode, FirewallMode
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">5</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Device classification</title>
+      <table>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "deviceId.cpp" AND "check"
+| rex field=_raw "deviceId\s(?&lt;Msg&gt;.*)"
+| table _time, Msg
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>Device classification - result</title>
+      <table>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "classification status:"
+| rex field=_raw "status:\s(?&lt;Msg&gt;.*)"
+| table _time, Msg
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>nsconfig.json</title>
+      <table>
+        <search>
+          <query>index=json1 host="$field1$" source="*nsconfig.json"
+| table clientConfig*
+| transpose</query>
+          <earliest>0</earliest>
+          <latest></latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">100</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>nsconfig.json</title>
+      <table>
+        <search>
+          <query>index=json1 host="$field1$" source="*nsconfig.json"
+| eval cache.configUpdateTimestamp=strftime('cache.configUpdateTimestamp', "%Y/%m/%d %H:%M:%S") 
+| eval cache.dns.lastResolvedTime=strftime('cache.dns.lastResolvedTime', "%Y/%m/%d %H:%M:%S") 
+| eval cache.dns.stats.lastReportedTime=strftime('cache.dns.stats.lastReportedTime', "%Y/%m/%d %H:%M:%S") 
+| eval cache.lastRebootTimestamp=strftime('cache.lastRebootTimestamp', "%Y/%m/%d %H:%M:%S") 
+| table logLevel*, log*, nsgw*, gslb*, sfCheck*, cache*, onpremcheck*, failClose*, idpconfig*, privateApps*, npa*, npa_srpv2*, npa_client_compose_device_user_id*, npa_client_l4 
+| transpose</query>
+          <earliest>0</earliest>
+          <latest></latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">100</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>User config</title>
+      <table>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "Config userconf json:"
+| rex field=_raw "Config\suserconf\sjson:\s(?&lt;userconf&gt;.*)"
+| spath input=userconf
+| table _time, autoUninstall, onpremcheck*, privateApps*
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">5</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Client - idp mode</title>
+      <table>
+        <search>
+          <query>index=netskope_client1 host="$field1$" "CMainFrame Checking IdP mode values"
+| rex field=_raw "idPModeEnabled\s:\s(?&lt;idPModeEnabled&gt;.)\s,\sidPLoggedIn\s(?&lt;idPLoggedIn&gt;.)" 
+| table _time, idPModeEnabled, idPLoggedIn
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>Client - idp enrol status</title>
+      <table>
+        <search>
+          <query>index=netskope_client1 host="$field1$" "IdPProvisioning" AND "Change State"
+| rex field=_raw "from:\s(?&lt;Before&gt;.*)\sto\s(?&lt;After&gt;.*)"
+| table _time, Before, After
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>UPN</title>
+      <table>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype="nsdebuglog"  "upn = "
+| rex field=_raw "upn\s=\s(?&lt;UPN&gt;.*)"
+| table _time, UPN
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>nssteering.json</title>
+      <table>
+        <search>
+          <query>index=json1 host="$field1$" sourcetype=nsconfig source=*nssteering.json
+| spath steering_config_name
+| spath traffic_mode
+| spath domain_ports
+| spath dynamic_steering
+| spath offprem_steering_method
+| spath private_apps_enabled
+| spath private_apps_off_prem
+| spath private_apps_on_prem
+| table steering_config_name, traffic_mode, domain_ports, domains{}, dynamic_steering, offprem_steering_method, onprem_steering_method, private_apps_enabled, private_apps_enabled_specific, private_apps_off_prem, private_apps_off_prem_specific, private_apps_on_prem, private_apps_on_prem_specific, private_apps_other_steering_method, status</query>
+          <earliest>0</earliest>
+          <latest></latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>nsbypass.json</title>
+      <table>
+        <search>
+          <query>index=json1 host="$field1$" sourcetype=nsconfig source="*nsbypass.json"
+| table steering_config_name, certPinnedAppList*</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">100</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>nsexception.json</title>
+      <table>
+        <search>
+          <query>index=json1 host="$field1$" sourcetype=nsconfig source=*nsexception.json
+| spath fail_close
+| spath ips{}
+| spath names{}
+| spath protocols{}
+| spath "Off Prem"
+| spath "On Prem"
+| spath status
+| spath steering_config_name
+| table steering_config_name, status, fail_close, "On Prem.*", "Off Prem.*", ips{}, names{}, protocols{}</query>
+          <earliest>0</earliest>
+          <latest></latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Block Notifications</title>
+      <table>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "Notification msg"
+| rex field=_raw "Notification\smsg:\s(?&lt;MSG&gt;.*)"
+| spath input=MSG
+| rename name as Template_name
+| table _time, Template_name, app, app_access_type, uj_event_fields{}.activity, block_type, uj_event_fields{}.policy_name,  url
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Tunnel establishment vs Tunneled traffic</title>
+      <chart>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog  ("nsssl.cpp" AND "sock") OR "Tunneling flow"
+| rex field=_raw "nsssl\sTLS\s(?&lt;MSG&gt;.*)\s\d+"
+| rex field=_raw "(?&lt;MSG&gt;Tunneling\sflow)"
+| timechart span=5m count by MSG</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.overlayFields">"Tunneling flow"</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked100</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Tunneled vs Bypassed</title>
+      <chart>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "Tunneling flow" OR "Bypassing connection" OR "FailClosed flow dropped"
+| eval Result=case( match(_raw,"FailClosed"), "Dropped",
+               match(_raw,"Bypassing"), "Bypassed",
+               1=1, "Tunneled")
+| timechart span=15m count by Result</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Tunnel Process and Dest</title>
+      <table>
+        <title>host - dest</title>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "Tunneling flow from addr:"
+| rex field=_raw ",\sprocess:\s(?&lt;process&gt;.*)\sto\shost:\s(?&lt;DstHost&gt;.*),\saddr:\s(?&lt;DstIP&gt;.*)"
+| eval Result = DstHost." - ".DstIP
+| stats count by process
+| sort -count</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>BypassAppMgr Blocking UDP connection from process</title>
+      <table>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "Blocking UDP connection from process"
+| rex field=_raw "process:\s(?&lt;Process&gt;.*),\sdest\sIP:(?&lt;Dst&gt;.*)"
+| stats  count by Process
+| sort -count</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">100</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>Bypass by process</title>
+      <table>
+        <title>Bypassing connection from process:</title>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "Bypassing connection from process:"
+| rex field=_raw "process:\s(?&lt;process&gt;.*),\shost:\s(?&lt;DstHost&gt;.*)"
+| stats values(DstHost) as Dst count by process
+| sort -count</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">5</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>On-Prem Bypass IP based</title>
+      <table>
+        <title>Bypassing connection by tunneling to exception Dest IP:</title>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "Bypassing connection by tunneling to exception Dest IP"
+| rex field=_raw "Dest\sIP:\s(?&lt;DstIp&gt;.*),\shost:\s(?&lt;DstHost&gt;.*),\sprocess:\s(?&lt;process&gt;.*)"
+| stats values(DstHost) as DstHost, values(DstIp) as DstIps count by process
+| sort -count</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>On-Prem Bypass by tunneling from process</title>
+      <chart>
+        <title>Bypassing connection by tunneling from process</title>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "Bypassing connection by tunneling from process:"
+| rex field=_raw "process:\s(?&lt;process&gt;.*),\shost:\s(?&lt;DstHost&gt;.*)"
+| stats count by process</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>On-Prem Bypass by tunneling from process</title>
+      <table>
+        <title>Bypassing connection by tunneling from process</title>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "Bypassing connection by tunneling from process:"
+| rex field=_raw "process:\s(?&lt;process&gt;.*),\shost:\s(?&lt;DstHost&gt;.*)"
+| stats values(DstHost) as Dst count by process
+| sort -count</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">3</option>
+        <option name="drilldown">none</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Off-Prem Bypass</title>
+      <chart>
+        <title>BypassAppMgr bypassing flow to exception</title>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "BypassAppMgr bypassing flow to exception"
+| rex field=_raw "host:\s(?&lt;DstHost&gt;.*),\sprocess:\s(?&lt;process&gt;.*),\sDest\sIP"
+| stats count by process</query>
+          <earliest>-30d@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>Off-Prem Bypass IP based</title>
+      <table>
+        <title>Bypassing connection to exception Dest IP</title>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "BypassAppMgr Bypassing connection to exception Dest IP:"
+| rex field=_raw "Dest\sIP:\s(?&lt;DstIp&gt;.*),\shost:\s(?&lt;DstHost&gt;.*),\sprocess:\s(?&lt;process&gt;.*)"
+| stats values(DstHost) as DstHost, values(DstIp) as DstIps count by process
+| sort -count</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>Off-Prem Bypass</title>
+      <table>
+        <title>BypassAppMgr bypassing flow to exception</title>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "BypassAppMgr bypassing flow to exception"
+| rex field=_raw "host:\s(?&lt;DstHost&gt;.*),\sprocess:\s(?&lt;process&gt;.*),\sDest\sIP"
+| stats values(DstHost) as DstHost count by process
+| sort -count</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">5</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Bypass white listed Process</title>
+      <table>
+        <title>Bypassing connection from white listed process:</title>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "Bypassing connection from white listed process:"
+| rex field=_raw "process:\s(?&lt;process&gt;.*),\shost:\s(?&lt;DstHost&gt;.*)"
+| stats values(DstHost) as Dst count by process
+| sort -count</query>
+          <earliest>-30d@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>Bypass</title>
+      <table>
+        <title>Bypass flows to Private IPs in exception list</title>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "to private ip:"
+| rex field=_raw "process:\s(?&lt;process&gt;.*)\sto\sprivate\sip:\s(?&lt;PrivateIP&gt;.*),\shost:\s(?&lt;DstHost&gt;.*)"
+| table _time, process, PrivateIP, DstHost
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>steerNPABasedOnLocation</title>
+      <table>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog  "steerNPAForOtherSteeringMethod"
+| rex field=_raw "steerNPABasedOnLocation\s=\s(?&lt;steerNPABasedOnLocation&gt;\d),\ssteerNPAForOtherSteeringMethod\s=\s(?&lt;steerNPAForOtherSteeringMethod&gt;\d)"
+| eval steerNPABasedOnLocation=if(steerNPABasedOnLocation==1, "True", "False")
+| eval steerNPAForOtherSteeringMethod=if(steerNPAForOtherSteeringMethod==1, "True", "False")
+| table _time, steerNPABasedOnLocation, steerNPAForOtherSteeringMethod
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">5</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>NPA - clientid</title>
+      <table>
+        <title>This value is used when you check publisher's logs and Sumo</title>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=npadebuglog "Set clientId "
+| rex field=_raw "Set\sclientId\s(?&lt;clientId&gt;.*)"
+| table _time, clientId
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>CN on Cert - chronicle name in the TLS session</title>
+      <table>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=npadebuglog "Verified: /CN=*"
+| rex field=_raw "CN=\s?(?&lt;CNinCert&gt;.*)"
+| table _time, CNinCert
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>NPA - Device info</title>
+      <table>
+        <title>common_name is used for Sumo search</title>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=npadebuglog "Device Info:" 
+| rex field=_raw "Device\sInfo:\s(?&lt;MSG&gt;.*)"
+| spath input=MSG
+| rename device.* as device_*
+| rename device_assessment.* as device_assessment_*
+| eval device_assessment_last_logon_time = strftime(device_assessment_last_logon_time, "%Y/%m/%d %H:%M:%S") 
+| table _time, client* device_*
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">5</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>NPA - Authentication</title>
+      <table>
+        <search>
+          <query>index=netskope_client1 host="$field1$" re-auth OR IdPProvisioning
+| table _raw
+| sort _raw</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>NPA - adminConfig</title>
+      <table>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype="nsdebuglog"  "Config adminConfig json:"
+| rex field=_raw "Config\sadminConfig\sjson:\s(?&lt;adminConfig&gt;.*)"
+| spath input=adminConfig
+| table _time, *npa*
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">5</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Failed to get DNS resolver values</title>
+      <chart>
+        <title>Failed to get DNS resolver values</title>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "Failed to get DNS resolver values"
+| timechart span=15m count</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.chart">column</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>NPA Cert verify</title>
+      <chart>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=npadebuglog "tls_process_server_certificate:certificate"
+| rex field=_raw "0x0\s(?&lt;Result&gt;.*)"
+| timechart span=15m count by Result</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>NPA - Broken TLS channel</title>
+      <chart>
+        <search>
+          <query>index=netskope_client1 host=$field1$ sourcetype=npadebuglog "Broken TLS channel"
+| timechart span=10m count</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>NPA - TSL pipe for CN not found</title>
+      <chart>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=npadebuglog "TSL pipe for CN"
+| rex field=_raw "TSL\spipe\sfor\sCN\s(?&lt;CN&gt;.*)\sis\snot"
+| timechart span=10m count by CN</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>NPA KeepAlive Fails</title>
+      <chart>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=npadebuglog "keepAlive fails"
+| timechart span=10m count</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>NPA - shutdown packet received</title>
+      <chart>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=npadebuglog "Shutdown packet received from gateway"
+| timechart span=30m count</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>NPA - Connected to</title>
+      <table>
+        <title>Getting policy rule for host</title>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=npadebuglog "Getting policy rule"
+| rex field=_raw "host\s(?&lt;dsthost&gt;.*)\sip\s(?&lt;hex&gt;.*),\sproto\s(?&lt;proto&gt;.*)\sport\s(?&lt;port&gt;.*)"
+| rex field=hex "(?&lt;d1&gt;[0-9A-Fa-f]{1,2})(?&lt;d2&gt;[0-9A-Fa-f]{2})(?&lt;d3&gt;[0-9A-Fa-f]{2})(?&lt;d4&gt;[0-9A-Fa-f]{2})"
+| eval ip_from_Hex=tostring(tonumber(d4,16))+"."+tostring(tonumber(d3,16))+"."+tostring(tonumber(d2,16))+"."+tostring(tonumber(d1,16))
+| table _time, dsthost, hex, ip_from_Hex, proto, port
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>NPA - dnsdb.cpp Added IP</title>
+      <table>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=npadebuglog "dnsdb.cpp" AND "host"
+| rex field=_raw "Added\sIP\s(?&lt;hex&gt;0x[0-9a-fA-F]+)\shost(?&lt;Host&gt;.*)"
+| rex field=hex "(?&lt;d1&gt;[0-9A-Fa-f]{2})(?&lt;d2&gt;[0-9A-Fa-f]{2})(?&lt;d3&gt;[0-9A-Fa-f]{2})(?&lt;d4&gt;[0-9A-Fa-f]{2})"
+| eval ip=if(len(hex)=10, tostring(tonumber(d1,16))+"."+tostring(tonumber(d2,16))+"."+tostring(tonumber(d3,16))+"."+tostring(tonumber(d4,16)), "0x0")
+| stats  values(hex), values(ip), count by Host
+| sort Host</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>NPA - localDnsCache.cpp Adding map ip hex cn (null) for host hostname</title>
+      <table>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=npadebuglog "Adding map ip"
+| rex field=_raw "ip\s(?&lt;hex&gt;.*)\scn\s(?&lt;cn&gt;.*)\sfor\shost\s(?&lt;mhost&gt;.*)"
+| rex field=hex "(?&lt;d1&gt;[0-9A-Fa-f]{2})(?&lt;d2&gt;[0-9A-Fa-f]{2})(?&lt;d3&gt;[0-9A-Fa-f]{2})(?&lt;d4&gt;[0-9A-Fa-f]{2})"
+| eval ip=tostring(tonumber(d1,16))+"."+tostring(tonumber(d2,16))+"."+tostring(tonumber(d3,16))+"."+tostring(tonumber(d4,16))
+| stats  values(ip), count by mhost, hex
+| sort -count</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>NPA - Rule</title>
+      <table>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=npadebuglog "Adding Rule" OR "Adding Host Rule"
+| rex field=_raw "\sRule\s(?&lt;rule&gt;[\s\S]*)"
+| rex field=rule "Name:\s(?&lt;Name&gt;.*)"
+| rex field=rule "(?&lt;Target&gt;.*:.*:.*;)"
+| rex field=rule "Action:(?&lt;Action&gt;.*)"
+| rex field=rule "Publisher[s]:(?&lt;Publisher&gt;.*)"
+| rex field=rule "Use\sPrivate\sDNS\:(?&lt;Use_Private_DNS&gt;.*)"
+| fillnull value=null Name, Target, Action, Stitcher, Publisher, Use_Private_DNS
+| table Name, Target, Action, Publisher, Use_Private_DNS
+| stats values(Target) as Target count by Name, Publisher, Action,  Use_Private_DNS
+| sort -count</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">3</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>NS Client update msg</title>
+      <event>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=nsdebuglog "Config Posting log msg"</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">5</option>
+        <option name="list.drilldown">none</option>
+        <option name="list.wrap">1</option>
+        <option name="maxLines">5</option>
+        <option name="raw.drilldown">full</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">0</option>
+        <option name="table.drilldown">all</option>
+        <option name="table.sortDirection">asc</option>
+        <option name="table.wrap">1</option>
+        <option name="type">list</option>
+      </event>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>NPA was disconnected from Cloud side due to some reasons</title>
+      <event>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=npadebuglog "Shutdown packet received from gateway"</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="list.drilldown">none</option>
+        <option name="list.wrap">1</option>
+        <option name="maxLines">5</option>
+        <option name="raw.drilldown">full</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">0</option>
+        <option name="table.drilldown">all</option>
+        <option name="table.sortDirection">asc</option>
+        <option name="table.wrap">1</option>
+        <option name="type">list</option>
+      </event>
+    </panel>
+    <panel>
+      <title>NPA - handleDataFromGw()</title>
+      <table>
+        <search>
+          <query>index=netskope_client1 host="$field1$" sourcetype=npadebuglog "handleDataFromGw():" AND "Seq"
+| rex field=_raw "Seq\s(?&lt;Seq&gt;.*),\sclientId\s(?&lt;clientId&gt;.*),\sconnId\s(?&lt;connId&gt;.*),\sdestUrl\s(?&lt;destUrl&gt;.*),\sdport\s(?&lt;dport&gt;.*),\sipproto\s(?&lt;ipproto&gt;.*),\stype\s(?&lt;type&gt;.*),\sdlen\s(?&lt;dlen&gt;.*),\serror\s(?&lt;error&gt;.*)\sdevice\scn\s(?&lt;devicecn&gt;.*),\suser\s(?&lt;user&gt;.*),\stenant.*publisherCN\s(?&lt;publisherCN&gt;.*),\sdestIp\s(?&lt;destIp&gt;.*)\smeta\s(?&lt;meta&gt;.*)"
+| table _time, Seq, clientId, connId, destUrl, ipproto, type, dlen, error, devicecn, user, publisherCN, destIp, meta
+| sort _time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+</form>
+

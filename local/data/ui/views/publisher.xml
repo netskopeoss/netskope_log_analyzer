@@ -1,0 +1,594 @@
+<form version="1.1" theme="dark">
+  <label>Publisher</label>
+  <fieldset submitButton="false">
+    <input type="dropdown" token="field1">
+      <label>Host</label>
+      <fieldForLabel>host</fieldForLabel>
+      <fieldForValue>host</fieldForValue>
+      <search>
+        <query>index=netskope_publisher1 sourcetype="npa"
+| table host
+| dedup host</query>
+        <earliest>0</earliest>
+        <latest></latest>
+      </search>
+    </input>
+    <input type="time" token="field2">
+      <label>Time range</label>
+      <default>
+        <earliest>0</earliest>
+        <latest></latest>
+      </default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>NPA - version</title>
+      <table>
+        <search>
+          <query>index=netskope_publisher1 host="$field1$" " Agent version "
+| rex field=_raw "Agent\sversion\s(?&lt;Agent_version&gt;.*)\swas"
+| table _time, Agent_version
+| sort -_time</query>
+          <earliest>0</earliest>
+          <latest></latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">5</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <table>
+        <search>
+          <query>index=netskope_publisher1 host="$field1$" "logPublisherTunnelEvent()"
+| rex field=_raw "0x0\s(?&lt;TunnelEvent&gt;.*)"
+| spath input=TunnelEvent
+| table _time, eventId, publisherId, stitcherIp, tenant
+| sort _time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">100</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>NPA - Received response</title>
+      <table>
+        <search>
+          <query>index=netskope_publisher1 host="$field1$" "Received response for host "
+| rex field=_raw "Received\sresponse\sfor\s(?&lt;Str&gt;.*)"
+| spath input=Str
+| table _time, Str
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>NPA - Connected Stitcher</title>
+      <table>
+        <search>
+          <query>index=netskope_publisher1 host="$field1$" "Connecting to"
+| rex field=_raw "0x0\sConnecting\sto\s(?&lt;StitcherIP&gt;.*)"
+| table _time, StitcherIP
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Traffic</title>
+      <table>
+        <title>snat.cpp</title>
+        <search>
+          <query>index=netskope_publisher1 host="$field1$" sourcetype="npa"  "new snat conn"
+| rex field=_raw "new\ssnat\sconn\s(?&lt;SourceName&gt;.*)\s(?&lt;DestName&gt;.*)\s(?&lt;SourceHexIP&gt;[a-f|0-9]+):(?&lt;SourcePort&gt;\d+)=&gt;(?&lt;DestHexIP&gt;[a-f|0-9]+):(?&lt;DestPort&gt;\d+)"
+| rex field=SourceHexIP "(?&lt;d1&gt;[0-9A-Fa-f]{2})(?&lt;d2&gt;[0-9A-Fa-f]{2})(?&lt;d3&gt;[0-9A-Fa-f]{2})(?&lt;d4&gt;[0-9A-Fa-f]{2})"
+| eval SourceIP=tostring(tonumber(d1,16))+"."+tostring(tonumber(d2,16))+"."+tostring(tonumber(d3,16))+"."+tostring(tonumber(d4,16))
+| eval length=len(DestHexIP)
+| eval DestHexIP=if('length' == "7","0".DestHexIP,'DestHexIP')
+| rex field=DestHexIP "(?&lt;d5&gt;[0-9A-Fa-f]{2})(?&lt;d6&gt;[0-9A-Fa-f]{2})(?&lt;d7&gt;[0-9A-Fa-f]{2})(?&lt;d8&gt;[0-9A-Fa-f]{2})"
+| eval DestIP=tostring(tonumber(d5,16))+"."+tostring(tonumber(d6,16))+"."+tostring(tonumber(d7,16))+"."+tostring(tonumber(d8,16))
+| table _time, SourceName, DestName, SourceHexIP, SourceIP, SourcePort, DestHexIP, DestIP, DestPort, length
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Event data</title>
+      <table>
+        <title>eventlogger.cpp</title>
+        <search>
+          <query>index=netskope_publisher1 host="$field1$" "eventlogger.cpp" AND "log"
+| rex field=_raw "0x[0-9|a-f]+\s(?&lt;EventData&gt;.*)"
+| spath input=EventData
+| eval txMB=round(txBytes/1024000)
+| eval rxMB=round(rxBytes/1024000)
+| table _time, userId, clientIp, destHost, destIp, destPort, deviceId, eventId, proto, rxBytes, sourceIp, sourcePort, tenant, txMB, rxMB
+|  sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>NPA - Connected Sticher IP</title>
+      <chart>
+        <search>
+          <query>index=netskope_publisher1 host="$field1$" "Connecting to"
+| rex field=_raw "0x0\sConnecting\sto\s(?&lt;StitcherIP&gt;.*)"
+| timechart span=10m count by StitcherIP</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>Disconnected vs connected</title>
+      <chart>
+        <search>
+          <query>index=netskope_publisher1 host="$field1$" "NPADISCONNECTED" OR "NPACONNECTED"
+| rex field=_raw "eventId\":\s\"(?&lt;eventid&gt;.*)\",\s\"publisherId"
+| timechart span=10m count by eventid</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>m_rxBytes, m_txBytes</title>
+      <chart>
+        <search>
+          <query>index=netskope_publisher1 host="$field1$" m_rxBytes
+| rex field=_raw "stats:\sm_rxBytes\s(?&lt;m_rxBytes&gt;\d*),\sm_txBytes\s(?&lt;m_txBytes&gt;\d*),\srx:\s(?&lt;rx&gt;\d*.\d*)\sKb\/s\stx:\s(?&lt;tx&gt;\d*.\d*)\sKb"
+| timechart span=10m max(m_rxBytes), max(m_txBytes),</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>rx, tx</title>
+      <chart>
+        <search>
+          <query>index=netskope_publisher1 host="$field1$" m_rxBytes
+| rex field=_raw "stats:\sm_rxBytes\s(?&lt;m_rxBytes&gt;\d*),\sm_txBytes\s(?&lt;m_txBytes&gt;\d*),\srx:\s(?&lt;rx&gt;\d*.\d*)\sKb\/s\stx:\s(?&lt;tx&gt;\d*.\d*)\sKb"
+| timechart span=10m max(rx), max(tx)</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>NPA - SSL_acceptReturnedError</title>
+      <chart>
+        <search>
+          <query>index=netskope_publisher1 host="$field1$" " SSL_accept returned error "
+| rex field=_raw "SSL_accept\sreturned\serror\s(?&lt;SSL_acceptReturnedError&gt;.*)"
+| timechart span=10m count by SSL_acceptReturnedError</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>NPA - SSL routines</title>
+      <chart>
+        <search>
+          <query>index=netskope_publisher1 host="$field1$" "SSL routines"
+| rex field=_raw "SSL\sroutines:(?&lt;SSLR&gt;.*)"
+| timechart span=10m count by SSLR</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Publisher - Created events</title>
+      <table>
+        <search>
+          <query>index=netskope_publisher1 host="$field1$" logFlowCreatedEvent
+| rex field=_raw "(?&lt;CreatedEvent&gt;\{\".*\"\})"
+| spath input=CreatedEvent
+| table _time, clientIp, destHost, destPort, deviceId, eventId, proto, sourceIp, sourcePort, tenant, userId
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>NPA GetHandler doesn't exist</title>
+      <chart>
+        <search>
+          <query>index=netskope_publisher1 host="$field1$" "getHandler()" AND "does not exist"
+| rex field=_raw "Client\s(?&lt;ClientID&gt;.*)\sdoes"
+| table _time, ClientID
+| timechart span=15m count by ClientID useother=f</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>NPA - Remove Channel</title>
+      <chart>
+        <search>
+          <query>index=netskope_publisher1 host="$field1$" "removeChannel()" AND "does not exist"
+| rex field=_raw "Client\s(?&lt;ClientID&gt;.*)\sdoes"
+| table _time, ClientID
+| timechart span=15m count by ClientID</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Traffic from client - handleRx()</title>
+      <table>
+        <search>
+          <query>index=netskope_publisher1 host="$field1$" "handleRx()" AND "Seq"
+| rex field=_raw "Seq\s(?&lt;Seq&gt;.*),\sclientId\s(?&lt;clientId&gt;.*),\sconnId\s(?&lt;connId&gt;.*),\sdestUrl\s(?&lt;destUrl&gt;.*),\sdport\s(?&lt;dport&gt;.*),\sipproto\s(?&lt;ipproto&gt;.*),\stype\s(?&lt;type&gt;.*),\sdlen\s(?&lt;dlen&gt;.*),\sdevice\scn\s(?&lt;devicecn&gt;.*),\suser\s(?&lt;user&gt;.*),\stenant.*publisherCN\s(?&lt;publisherCN&gt;.*),\sdestIp\s(?&lt;destIp&gt;.*)\smeta\s(?&lt;meta&gt;.*)"
+| table _time, Seq, clientId, connId, destUrl, ipproto, type, dlen, devicecn, user, publisherCN, destIp, meta
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Traffic from client  - sendDataLeft()</title>
+      <table>
+        <search>
+          <query>index=netskope_publisher1 host="$field1$" "sendDataLeft()" AND "Seq"
+| rex field=_raw "Seq\s(?&lt;Seq&gt;.*),\sclientId\s(?&lt;clientId&gt;.*),\sconnId\s(?&lt;connId&gt;.*),\sdestUrl\s(?&lt;destUrl&gt;.*),\sdport\s(?&lt;dport&gt;.*),\sipproto\s(?&lt;ipproto&gt;.*),\stype\s(?&lt;type&gt;.*),\sdlen\s(?&lt;dlen&gt;.*),\sdevice\scn\s(?&lt;devicecn&gt;.*),\suser\s(?&lt;user&gt;.*),\stenant.*publisherCN\s(?&lt;publisherCN&gt;.*),\sdestIp\s(?&lt;destIp&gt;.*)\smeta\s(?&lt;meta&gt;.*)"
+| table _time, Seq, clientId, connId, destUrl, ipproto, type, dlen, devicecn, user, publisherCN, destIp, meta
+| sort -_time</query>
+          <earliest>$field2.earliest$</earliest>
+          <latest>$field2.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+</form>
