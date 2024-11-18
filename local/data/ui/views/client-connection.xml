@@ -250,7 +250,7 @@
 		"ds_ORP4wiSl_ds_YSgjGLGw_ds_mzmNhkaL_ds_v57DBEEj_ds_hLXoE9n0": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" \"Total active proxy\"\n| rex field=_raw \"(?<LogTime>\\d{4}\\/\\d{2}\\/\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*active\\sproxy\\sCount\\s(?<ActiveProxyCount>.*),[\\s\\S]+Total\\sproxy\\sCount\\s(?<TotalProxyCount>.*),\\sFull\\sProxy\\sList\\s:(?<FullProxyList>.*)\"\n| table LogTime, ActiveProxyCount, TotalProxyCount, FullProxyList\n| sort LogTime",
+				"query": "index=netskope_client1 host=\"$field1$\" \"Total active proxy\"\n| rex field=_raw \"(?<LogTime>\\d{4}\\/\\d{2}\\/\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*Total\\sactive\\sproxy\\sCount\\s(?<ActiveProxyCount>.*),\\sActive\\sProxy\\sList\\s*:(?<ActiveProxyList>.*)[\\s\\S]+Total\\sproxy\\sCount\\s(?<TotalProxyCount>\\d+),\\sFull\\sProxy\\sList\\s*:(?<FullProxyList>.*)\"\n| table LogTime, ActiveProxyCount, ActiveProxyList, TotalProxyCount, FullProxyList\n| sort LogTime",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"
@@ -334,6 +334,17 @@
 				}
 			},
 			"name": "PoP list got from GSLB"
+		},
+		"ds_93ffU7nk_ds_FdRRg5Qz_ds_Cfo912F2_ds_ydLKTkRP_ds_ORP4wiSl_ds_YSgjGLGw_ds_mzmNhkaL_ds_v57DBEEj_ds_hLXoE9n0": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"nsdebuglog\"  \"Primary tunnel source IP\"\n| rex field=_raw \"source\\sIP:\\s(?<Source>.*)\\sPrimary\\stunnel\\sdest\\sIP:\\s(?<Dst>.*)\" \n| eval Source-Dst=\"Tunnel source IP: \".Source.\" Dst IP: \".Dst\n| stats values(Source-Dst) as Source-Dst",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "Tunnel souce"
 		}
 	},
 	"visualizations": {
@@ -604,6 +615,23 @@
 			"containerOptions": {},
 			"showProgressBar": false,
 			"showLastUpdated": false
+		},
+		"viz_wG1hq5T4": {
+			"type": "splunk.table",
+			"dataSources": {
+				"primary": "ds_93ffU7nk_ds_FdRRg5Qz_ds_Cfo912F2_ds_ydLKTkRP_ds_ORP4wiSl_ds_YSgjGLGw_ds_mzmNhkaL_ds_v57DBEEj_ds_hLXoE9n0"
+			},
+			"title": "Tunnel source",
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false,
+			"options": {
+				"columnFormat": {
+					"_time": {
+						"width": 60
+					}
+				}
+			}
 		}
 	},
 	"inputs": {
@@ -639,7 +667,7 @@
 				"type": "block",
 				"position": {
 					"x": 10,
-					"y": 1940,
+					"y": 2170,
 					"w": 1410,
 					"h": 1240
 				}
@@ -649,7 +677,7 @@
 				"type": "block",
 				"position": {
 					"x": 10,
-					"y": 1050,
+					"y": 1280,
 					"w": 1410,
 					"h": 870
 				}
@@ -661,7 +689,7 @@
 					"x": 10,
 					"y": 10,
 					"w": 1410,
-					"h": 1020
+					"h": 1260
 				}
 			},
 			{
@@ -669,7 +697,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 2780,
+					"y": 3010,
 					"w": 1390,
 					"h": 390
 				}
@@ -679,7 +707,7 @@
 				"type": "block",
 				"position": {
 					"x": 710,
-					"y": 80,
+					"y": 50,
 					"w": 700,
 					"h": 190
 				}
@@ -689,7 +717,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 80,
+					"y": 50,
 					"w": 680,
 					"h": 190
 				}
@@ -699,7 +727,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 740,
+					"y": 710,
 					"w": 1390,
 					"h": 250
 				}
@@ -709,7 +737,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 1650,
+					"y": 1880,
 					"w": 1390,
 					"h": 260
 				}
@@ -718,10 +746,10 @@
 				"item": "viz_BlwX4Azv",
 				"type": "block",
 				"position": {
-					"x": 330,
+					"x": 310,
 					"y": 20,
-					"w": 90,
-					"h": 30
+					"w": 70,
+					"h": 20
 				}
 			},
 			{
@@ -729,7 +757,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 280,
+					"y": 250,
 					"w": 1390,
 					"h": 450
 				}
@@ -739,7 +767,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 1990,
+					"y": 2220,
 					"w": 1390,
 					"h": 380
 				}
@@ -749,7 +777,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 1380,
+					"y": 1610,
 					"w": 1390,
 					"h": 260
 				}
@@ -759,7 +787,7 @@
 				"type": "block",
 				"position": {
 					"x": 10,
-					"y": 3190,
+					"y": 3420,
 					"w": 1410,
 					"h": 1640
 				}
@@ -769,7 +797,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 1090,
+					"y": 1320,
 					"w": 1390,
 					"h": 280
 				}
@@ -779,7 +807,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 3250,
+					"y": 3480,
 					"w": 1390,
 					"h": 290
 				}
@@ -789,7 +817,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 3570,
+					"y": 3800,
 					"w": 1390,
 					"h": 290
 				}
@@ -799,7 +827,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 3880,
+					"y": 4110,
 					"w": 1390,
 					"h": 290
 				}
@@ -809,7 +837,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 4200,
+					"y": 4420,
 					"w": 1390,
 					"h": 290
 				}
@@ -819,7 +847,7 @@
 				"type": "block",
 				"position": {
 					"x": 10,
-					"y": 4851,
+					"y": 5081,
 					"w": 1410,
 					"h": 1740
 				}
@@ -829,7 +857,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 4920,
+					"y": 5150,
 					"w": 1390,
 					"h": 350
 				}
@@ -839,7 +867,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 4520,
+					"y": 4750,
 					"w": 1390,
 					"h": 290
 				}
@@ -849,7 +877,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 5280,
+					"y": 5510,
 					"w": 1390,
 					"h": 340
 				}
@@ -859,9 +887,19 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 2380,
+					"y": 2610,
 					"w": 1390,
 					"h": 390
+				}
+			},
+			{
+				"item": "viz_wG1hq5T4",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 970,
+					"w": 1390,
+					"h": 280
 				}
 			}
 		],

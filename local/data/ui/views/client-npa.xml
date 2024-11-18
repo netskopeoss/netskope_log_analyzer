@@ -27,17 +27,6 @@
 			},
 			"name": "Rule"
 		},
-		"ds_IBqh7Cpp": {
-			"type": "ds.search",
-			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog  \"connected to remote host\" OR \"443 successfully\"\n| rex field=_raw \"(?<clientip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\)?+:\"\n| iplocation clientip | geostats latfield=lat longfield=lon count by clientip",
-				"queryParameters": {
-					"earliest": "$tr_n9GlxAEz.earliest$",
-					"latest": "$tr_n9GlxAEz.latest$"
-				}
-			},
-			"name": "Cluster map search"
-		},
 		"ds_hLXoE9n0": {
 			"type": "ds.search",
 			"options": {
@@ -48,28 +37,6 @@
 				}
 			},
 			"name": "NPA Connected PoPs - Timechart"
-		},
-		"ds_z0jEHn3e": {
-			"type": "ds.search",
-			"options": {
-				"query": "index=netskope_json1 sourcetype=nsconfig host=\"$field1$\" source=\"*nsconfig.json\"\n| rename clientConfig.configurationName as 001.clientConfig.configurationName\n| eval 002.cache.lastClientUpdatedTimestamp=strftime('cache.lastClientUpdatedTimestamp', \"%Y/%m/%d %H:%M:%S\")\n| eval 003.cache.configUpdateTimestamp=strftime('cache.configUpdateTimestamp', \"%Y/%m/%d %H:%M:%S\")\n| rename \nclientConfig.clientUpdate* as 004.clientConfig.clientUpdate*,\nclientConfig.clientUpdate.useScheduledUpgrade* as 005.clientConfig.clientUpdate.useScheduledUpgrade*\n| table 00*\n| transpose 0 column_name=\"header\":\n| fields - \"column\"",
-				"queryParameters": {
-					"earliest": "0",
-					"latest": ""
-				}
-			},
-			"name": "nsconfig.json - update settings"
-		},
-		"ds_3BW1BQjy": {
-			"type": "ds.search",
-			"options": {
-				"query": "index=netskope_client1 sourcetype=nsdebuglog host=\"$field1$\"  \"clientStatusHandler client status message: \"\n| head 1\n| rex field=_raw \"clientStatusHandler\\sclient\\sstatus\\smessage:\\s(?<client_status>.*)\"\n| spath input=client_status\n| rename \nclient_status.host_info.device_make as \"01. Device Maker\", \nclient_status.host_info.device_model as \"02. Device Model\",\nclient_status.host_info.os as \"03. Host OS\",\nclient_status.host_info.os_version as \"04. Host OS version\",\nclient_status.host_info.hostname as \"05. Host name\",\nclient_status.host_info.macAddresses{} as \"06. Host MAC address\",\nclient_status.host_info.serialNumber as \"07. Host serial number\"\nclient_status.host_info.nsdeviceuid as \"08. Host nsdebviceuid\",\nclient_status.host_info.old_nsdeviceuid as \"09. old_nsdeviceuid0\",\n| eval \"10. Last update time\"=strftime('client_status.host_info.last_hostinfo_update_timestamp', \"%Y/%d/%m %H:%M:%S\")\n| table 0*, 1*\n| transpose\n",
-				"queryParameters": {
-					"earliest": "$tr_n9GlxAEz.earliest$",
-					"latest": "$tr_n9GlxAEz.latest$"
-				}
-			},
-			"name": "Client Status Handler"
 		},
 		"ds_7CpRsbSg": {
 			"type": "ds.search",
@@ -93,72 +60,6 @@
 			},
 			"name": "Select Client log"
 		},
-		"ds_MRGQyb8i": {
-			"type": "ds.search",
-			"options": {
-				"query": "index=netskope_client1 sourcetype=nsdebuglog host=\"$field1$\" \"clientStatusHandler client status message: \"\n| rex field=_raw \"clientStatusHandler\\sclient\\sstatus\\smessage:\\s(?<client_status>.*)\"\n| spath input=client_status\n| rename client_status.client_version as version\n| stats count by version",
-				"queryParameters": {
-					"earliest": "$tr_n9GlxAEz.earliest$",
-					"latest": "$tr_n9GlxAEz.latest$"
-				}
-			},
-			"name": "Client Version"
-		},
-		"ds_vKQzwM2y_ds_MRGQyb8i": {
-			"type": "ds.search",
-			"options": {
-				"query": "index=netskope_client1 sourcetype=nsdebuglog host=\"$field1$\" \"Tunnel established to gateway\"\n| rex field=_raw \"pop:\\s(?<pop>.*),\\sassigned\"\n| table _raw, pop\n| stats count by pop",
-				"queryParameters": {
-					"earliest": "$tr_n9GlxAEz.earliest$",
-					"latest": "$tr_n9GlxAEz.latest$"
-				}
-			},
-			"name": "Connected PoPs"
-		},
-		"ds_mISQGdBb_ds_vKQzwM2y_ds_MRGQyb8i": {
-			"type": "ds.search",
-			"options": {
-				"query": "index=netskope_client1 sourcetype=nsdebuglog host=\"$field1$\" \"SteeringConfig Steering Config name:\"\n| rex field=_raw \"name:\\s(?<SteeringConf>.*)\\sTraffic\\sMode:\\s(?<TrafficMode>.*)\\sDynamic\\ssteering\\s(?<DynamicSteering>\\d)\"\n| eval DynamicSteering=if(DynamicSteering == \"1\", \"true\", \"false\")\n| stats count by SteeringConf",
-				"queryParameters": {
-					"earliest": "$tr_n9GlxAEz.earliest$",
-					"latest": "$tr_n9GlxAEz.latest$"
-				}
-			},
-			"name": "Steering Configration"
-		},
-		"ds_lmo8JfHa": {
-			"type": "ds.search",
-			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=STAUpdate \"Verbose logging\" OR \"Running installation\" OR \": Windows \" \n| sort _time \n| table  _raw\n",
-				"queryParameters": {
-					"earliest": "$tr_n9GlxAEz.earliest$",
-					"latest": "$tr_n9GlxAEz.latest$"
-				}
-			},
-			"name": "STAUpdate"
-		},
-		"ds_mJF3HiBv_ds_lmo8JfHa": {
-			"type": "ds.search",
-			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" (sourcetype=nsdebuglog OR sourcetype=stagentUI) \"Config new client version\" OR \"Config download path for client update\" OR \"Config trying to download\" OR \"client auto update\" OR \"starting =\"\n| table _raw\n| sort _raw",
-				"queryParameters": {
-					"earliest": "$tr_n9GlxAEz.earliest$",
-					"latest": "$tr_n9GlxAEz.latest$"
-				}
-			},
-			"name": "Update history"
-		},
-		"ds_4qbss7jP": {
-			"type": "ds.search",
-			"options": {
-				"query": "index=netskope_client1 sourcetype=nsdebuglog host=\"$field1$\" \"clientStatusHandler client status message: \"\n| sort -_raw\n| rex field=_raw \"clientStatusHandler\\sclient\\sstatus\\smessage:\\s(?<client_status>.*)\"\n| spath input=client_status\n| rename client_status.client_version as version\n| table _time, version\n| dedup consecutive=true version\n| sort _time",
-				"queryParameters": {
-					"earliest": "$tr_n9GlxAEz.earliest$",
-					"latest": "$tr_n9GlxAEz.latest$"
-				}
-			},
-			"name": "Client version table"
-		},
 		"ds_9ze5Vfw0": {
 			"type": "ds.search",
 			"options": {
@@ -169,17 +70,6 @@
 				}
 			},
 			"name": "GSLB RTT"
-		},
-		"ds_82A9aQrp_ds_9ze5Vfw0": {
-			"type": "ds.search",
-			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog \"Tunnel established to gateway\" OR \"Proxy health\"\n| sort _raw\n| rex field=_raw \"(?<Time>^\\d{4}\\/\\d{2}\\/\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*nsTunnel\\s(?<MSG>.*)\"\n| rex field=MSG \"CFW\\sstatus:\\s(?<CFWStatus>.*)\"\n| table Time, MSG,",
-				"queryParameters": {
-					"earliest": "$tr_n9GlxAEz.earliest$",
-					"latest": "$tr_n9GlxAEz.latest$"
-				}
-			},
-			"name": "Timeline"
 		},
 		"ds_v57DBEEj_ds_hLXoE9n0": {
 			"type": "ds.search",
@@ -195,7 +85,7 @@
 		"ds_USxTAkrP_ds_9ze5Vfw0": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"npadebuglog\"  \"NPAGW\" AND \"RETRANS\" AND \"RTT\"\n| rex field=_raw \"NPAGW\\s(?<NPAGW>.*):\\sRETRANS.*RTT:(?<RTT>\\d+)ms,\"\n| timechart span=1h avg(RTT) as RTT by NPAGW",
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"npadebuglog\"  \"NPAGW\" AND \"RETRANS\" AND \"RTT\"\n| rex field=_raw \"NPAGW\\s(?<NPAGW>.*):\\sRETRANS.*RTT:(?<RTT>\\d+)ms,\"\n| timechart span=1h max(RTT) as RTT by NPAGW",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"
@@ -258,17 +148,6 @@
 			},
 			"name": "DNS timechart"
 		},
-		"ds_4kBsRgNB_ds_mzmNhkaL_ds_v57DBEEj_ds_hLXoE9n0": {
-			"type": "ds.search",
-			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog \"nsDnsResolver.cpp\" AND \"dnsResolver\" AND Failed\n| rex field=_raw \"(?<Gateway>gateway.*)\\sby\\s(?<DNS>.*)\" \n| eval DNS=DNS.\"_\".Gateway\n| stats count by DNS",
-				"queryParameters": {
-					"earliest": "$tr_n9GlxAEz.earliest$",
-					"latest": "$tr_n9GlxAEz.latest$"
-				}
-			},
-			"name": "DNS failure copy 2"
-		},
 		"ds_7Y9oH6d8_ds_p8PZ4Okn": {
 			"type": "ds.search",
 			"options": {
@@ -279,6 +158,39 @@
 				}
 			},
 			"name": "steering config NPA"
+		},
+		"ds_m1xwGxUM_ds_nwd5jErf": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" \"Next re-auth prompt at\" OR \"Reauthentication request received\" OR \"Shutdown packet received from gateway\" OR \"Change State from\" OR  \"Private Access=\"\n| rex field=_raw \"(?<LogTime>\\d{4}[-|\\/]\\d{2}[-|\\/]\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3})\" \n| rex field=_raw \"prompt\\sat\\s\\[(?<NextPrompt>.*)\\].*expiry\\sat\\s\\[(?<Expiry>.*)\\].*\\[(?<CurrentTime>.*)]\" \n| eval LogTime = replace(LogTime, \"-\", \"/\")\n| eval myNextPrompt=strftime(NextPrompt, \"%Y-%m-%d %H:%M:%S\")\n| eval myExpiry=strftime(Expiry, \"%y-%m-%d %H:%M:%S\")\n| eval myCurrentTime=strftime(CurrentTime, \"%y-%m-%d %H:%M:%S\")\n| eval Result=if(isnotnull(CurrentTime), if(Expiry-CurrentTime>10, \"Authentication likely succeeded.\", \"Authentication likely failed.\"), null())\n| eval Result=if(isnull(Result), _raw ,Result)\n| eval NextPrompt=NextPrompt.\" (\".myNextPrompt.\")\"\n| eval Expiry=Expiry.\" (\".myExpiry.\")\"\n| eval CurrentTime=CurrentTime.\" (\".myCurrentTime.\")\"\n| table LogTime, NextPrompt, Expiry, CurrentTime, Result\n| sort LogTime",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "NPA - Re-auth period"
+		},
+		"ds_uymu0ww9": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" \"user input post payload is\" OR \"Change State from\"\n| rex field=_raw \"(?<LogTime>\\d{4}\\/\\d{2}\\/\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*TenantName=(?<Tenant>.*)&UTCEpoch=(?<UTCEpoch>.*)\"\n| rex field=_raw \"(?<LogTime>\\d{4}\\/\\d{2}\\/\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*from:\\s(?<From>.*)\\sto\\s(?<To>.*)\"\n| eval UTCtime=if(isnull(UTCEpoch), null(), strftime(UTCEpoch, \"%Y-%m-%d %H:%M:%S\"))\n| eval UTCEpoch=UTCEpoch.\"(\".UTCtime.\")\"\n| table LogTime, Tenant, UTCEpoch, From, To\n| sort LogTime",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "IDP Enrollment"
+		},
+		"ds_nz8SDx8s_ds_uymu0ww9": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" \"user [\"\n| rex field=_raw \"user\\s\\[(?<User>.*)\\],\"\n| stats values(User) as User",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "NPA user"
 		}
 	},
 	"visualizations": {
@@ -441,7 +353,8 @@
 					"header:": {
 						"width": 92
 					}
-				}
+				},
+				"count": 1000
 			}
 		},
 		"viz_NBXJPXYn": {
@@ -506,6 +419,59 @@
 				"primary": "ds_7Y9oH6d8_ds_p8PZ4Okn"
 			},
 			"title": "Rule"
+		},
+		"viz_GuQG1ydt": {
+			"type": "splunk.table",
+			"options": {
+				"dataOverlayMode": "none",
+				"drilldown": "none",
+				"showRowNumbers": false,
+				"showInternalFields": false,
+				"count": 1000,
+				"columnFormat": {
+					"NextPrompt": {
+						"width": 60
+					},
+					"Expiry": {
+						"width": 60
+					},
+					"CurrentTime": {
+						"width": 60
+					}
+				}
+			},
+			"dataSources": {
+				"primary": "ds_m1xwGxUM_ds_nwd5jErf"
+			},
+			"title": "NPA - Re-atuh period"
+		},
+		"viz_IUR5VWUJ": {
+			"type": "splunk.table",
+			"options": {
+				"dataOverlayMode": "none",
+				"drilldown": "none",
+				"showRowNumbers": false,
+				"showInternalFields": false,
+				"count": 1000
+			},
+			"dataSources": {
+				"primary": "ds_uymu0ww9"
+			},
+			"title": "NPA - Re-atuh period"
+		},
+		"viz_dUGYORVE": {
+			"type": "splunk.table",
+			"options": {
+				"dataOverlayMode": "none",
+				"drilldown": "none",
+				"showRowNumbers": false,
+				"showInternalFields": false,
+				"count": 1000
+			},
+			"dataSources": {
+				"primary": "ds_nz8SDx8s_ds_uymu0ww9"
+			},
+			"title": "NPA - user"
 		}
 	},
 	"inputs": {
@@ -694,6 +660,36 @@
 					"y": 2820,
 					"w": 1390,
 					"h": 430
+				}
+			},
+			{
+				"item": "viz_GuQG1ydt",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 4500,
+					"w": 1390,
+					"h": 390
+				}
+			},
+			{
+				"item": "viz_IUR5VWUJ",
+				"type": "block",
+				"position": {
+					"x": 10,
+					"y": 4910,
+					"w": 1390,
+					"h": 660
+				}
+			},
+			{
+				"item": "viz_dUGYORVE",
+				"type": "block",
+				"position": {
+					"x": 470,
+					"y": 2700,
+					"w": 1390,
+					"h": 130
 				}
 			}
 		],

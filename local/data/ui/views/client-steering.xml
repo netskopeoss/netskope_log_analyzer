@@ -389,6 +389,17 @@
 				}
 			},
 			"name": "BypassAppMgr bypassing flow to"
+		},
+		"ds_cNHGvMXk_ds_tFQJ5Y1y_ds_nyIc4PX7_ds_hQ3DTGtU": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog \"Tunneling flow from\" AND app-fw\n| rex field=_raw \"(?<LogTime>\\d{4}\\/\\d{2}\\/\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*process:\\s(?<Process>.*)\\sto\\s(?<HostIP>host:\\s.*)\"\n| stats values(HostIP) as HostIP count by Process\n| sort -count",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "Tunneling flow from cfw"
 		}
 	},
 	"visualizations": {
@@ -506,7 +517,7 @@
 			"showProgressBar": false,
 			"showLastUpdated": false,
 			"options": {
-				"count": 14
+				"count": 30
 			}
 		},
 		"viz_iAnquG5k": {
@@ -653,6 +664,30 @@
 					}
 				}
 			}
+		},
+		"viz_BUBlHZYS": {
+			"type": "splunk.table",
+			"dataSources": {
+				"primary": "ds_cNHGvMXk_ds_tFQJ5Y1y_ds_nyIc4PX7_ds_hQ3DTGtU"
+			},
+			"title": "Tunneling flow cfw",
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false,
+			"options": {
+				"count": 100,
+				"columnFormat": {
+					"LogTime": {
+						"width": 60
+					},
+					"Process": {
+						"width": 109
+					},
+					"HostIP": {
+						"width": 340
+					}
+				}
+			}
 		}
 	},
 	"inputs": {
@@ -718,7 +753,7 @@
 				"type": "block",
 				"position": {
 					"x": 10,
-					"y": 1810,
+					"y": 1660,
 					"w": 1410,
 					"h": 1310
 				}
@@ -738,7 +773,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 1850,
+					"y": 1700,
 					"w": 1390,
 					"h": 410
 				}
@@ -758,7 +793,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 2720,
+					"y": 2570,
 					"w": 1390,
 					"h": 380
 				}
@@ -768,7 +803,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 2280,
+					"y": 2130,
 					"w": 1390,
 					"h": 420
 				}
@@ -787,10 +822,10 @@
 				"item": "viz_5IOi3LhA",
 				"type": "block",
 				"position": {
-					"x": 10,
-					"y": 3140,
-					"w": 1410,
-					"h": 860
+					"x": 0,
+					"y": 2990,
+					"w": 1420,
+					"h": 1250
 				}
 			},
 			{
@@ -798,18 +833,18 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 3180,
+					"y": 3030,
 					"w": 1390,
-					"h": 410
+					"h": 390
 				}
 			},
 			{
 				"item": "viz_l671BH1P",
 				"type": "block",
 				"position": {
-					"x": 10,
-					"y": 4020,
-					"w": 1410,
+					"x": 0,
+					"y": 4260,
+					"w": 1420,
 					"h": 790
 				}
 			},
@@ -817,8 +852,8 @@
 				"item": "viz_yEPX18Iq",
 				"type": "block",
 				"position": {
-					"x": 20,
-					"y": 4420,
+					"x": 10,
+					"y": 4660,
 					"w": 690,
 					"h": 380
 				}
@@ -827,8 +862,8 @@
 				"item": "viz_0ffUgM5f",
 				"type": "block",
 				"position": {
-					"x": 720,
-					"y": 4420,
+					"x": 710,
+					"y": 4580,
 					"w": 680,
 					"h": 380
 				}
@@ -837,8 +872,8 @@
 				"item": "viz_ycEBatHj",
 				"type": "block",
 				"position": {
-					"x": 720,
-					"y": 4050,
+					"x": 710,
+					"y": 4290,
 					"w": 680,
 					"h": 350
 				}
@@ -847,8 +882,8 @@
 				"item": "viz_TsyE54jL",
 				"type": "block",
 				"position": {
-					"x": 20,
-					"y": 4050,
+					"x": 10,
+					"y": 4290,
 					"w": 690,
 					"h": 350
 				}
@@ -858,9 +893,19 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 3600,
+					"y": 3840,
 					"w": 1390,
 					"h": 380
+				}
+			},
+			{
+				"item": "viz_BUBlHZYS",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 3430,
+					"w": 1390,
+					"h": 400
 				}
 			}
 		],

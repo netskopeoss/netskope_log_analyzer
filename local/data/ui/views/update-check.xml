@@ -162,13 +162,13 @@
 		"ds_kG6sfIX3_ds_DuaVHntP_ds_xh0scyrN_ds_3BW1BQjy": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_json1 source=\"*nsconfig.json\" AND NOT source=\"*prelogon_nsconfig.json\" host=\"$field1$\" \n| eval version_num  = tonumber(replace('cache.device.ns_version', \"^(\\d+\\.\\d+).*\", \"\\1\"))\n| eval bug_match=if(version_num < 116.0 , \"True\", \"False\")\n| table bug_match",
+				"query": "index=netskope_json1 source=\"*nsconfig.json\" AND NOT source=\"*prelogon_nsconfig.json\" host=\"$field1$\" \n| eval version_num  = tonumber(replace('cache.device.ns_version', \"^(\\d+\\.\\d+).*\", \"\\1\"))\n| eval bug_match=if(version_num < 122 , \"True\", \"False\")\n| table bug_match",
 				"queryParameters": {
 					"earliest": "0",
 					"latest": ""
 				}
 			},
-			"name": "ENG-487939-2"
+			"name": "ENG-540215"
 		},
 		"ds_uYZAIJUL_ds_9djM1het_ds_xh0scyrN_ds_3BW1BQjy": {
 			"type": "ds.search",
@@ -180,6 +180,28 @@
 				}
 			},
 			"name": "ENG-487939-4"
+		},
+		"ds_fgcuJROG_ds_ISZ8m3tk_ds_xh0scyrN_ds_3BW1BQjy": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_json1 source=\"*nsconfig.json\" AND NOT source=\"*prelogon_nsconfig.json\" host=\"$field1$\" \n| eval bug_match=if('cache.device.os'=\"Windows\", \"True\", \"False\")\n| table bug_match\n",
+				"queryParameters": {
+					"earliest": "0",
+					"latest": ""
+				}
+			},
+			"name": "ENG-487939-1 copy 1"
+		},
+		"ds_BflHLfxY_ds_kG6sfIX3_ds_DuaVHntP_ds_xh0scyrN_ds_3BW1BQjy": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_json1 source=\"*nsconfig.json\" AND NOT source=\"*prelogon_nsconfig.json\" host=\"$field1$\" \n| eval version_num  = tonumber(replace('cache.device.ns_version', \"^(\\d+\\.\\d+).*\", \"\\1\"))\n| eval bug_match=if(version_num < 116.0 , \"True\", \"False\")\n| table bug_match",
+				"queryParameters": {
+					"earliest": "0",
+					"latest": ""
+				}
+			},
+			"name": "ENG-487939-2 copy 1"
 		}
 	},
 	"visualizations": {
@@ -218,20 +240,6 @@
 			"showProgressBar": false,
 			"showLastUpdated": false,
 			"description": "Check if SelfProtection is enabled"
-		},
-		"viz_Yn0109pu": {
-			"type": "splunk.singlevalueicon",
-			"options": {
-				"showValue": false,
-				"icon": "splunk-enterprise-kvstore://icon-gear__c99f1d12-649f-433a-890a-bbf5cf548a6a.svg"
-			}
-		},
-		"viz_HPsm8cqG": {
-			"type": "splunk.singlevalueicon",
-			"options": {
-				"showValue": false,
-				"icon": "splunk-enterprise-kvstore://icon-users__229c9a8c-1b2e-4978-9d7e-4222e1d7a9b3.svg"
-			}
 		},
 		"viz_gFjZKgiX": {
 			"type": "splunk.singlevalue",
@@ -278,7 +286,7 @@
 			"title": "Condition 2",
 			"showProgressBar": false,
 			"showLastUpdated": false,
-			"description": "NS client version < 118.1"
+			"description": "NS client version < 122"
 		},
 		"viz_eCHL5oDo": {
 			"type": "splunk.singlevalue",
@@ -294,6 +302,40 @@
 			"showProgressBar": false,
 			"showLastUpdated": false,
 			"description": "Check if Peruser mode is enabled"
+		},
+		"viz_s3dPlkSR": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "### ENG-540215\nmsi files are not deleted after update\n\nWorkaround:\n\n1. NA\n\nSolution:\n\n- Update NS client to R122 or later",
+				"backgroundColor": "#708794",
+				"fontSize": "extraLarge"
+			}
+		},
+		"viz_rz0JLHIs": {
+			"type": "splunk.singlevalue",
+			"dataSources": {
+				"primary": "ds_fgcuJROG_ds_ISZ8m3tk_ds_xh0scyrN_ds_3BW1BQjy"
+			},
+			"containerOptions": {
+				"visibility": {}
+			},
+			"title": "Condition 1",
+			"showProgressBar": false,
+			"showLastUpdated": false,
+			"description": "OS = Windows"
+		},
+		"viz_OiNQGYup": {
+			"type": "splunk.singlevalue",
+			"dataSources": {
+				"primary": "ds_BflHLfxY_ds_kG6sfIX3_ds_DuaVHntP_ds_xh0scyrN_ds_3BW1BQjy"
+			},
+			"containerOptions": {
+				"visibility": {}
+			},
+			"title": "Condition 2",
+			"showProgressBar": false,
+			"showLastUpdated": false,
+			"description": "NS client version < 118.1"
 		}
 	},
 	"inputs": {
@@ -325,6 +367,16 @@
 		},
 		"structure": [
 			{
+				"item": "viz_s3dPlkSR",
+				"type": "block",
+				"position": {
+					"x": 10,
+					"y": 700,
+					"w": 1410,
+					"h": 310
+				}
+			},
+			{
 				"item": "viz_UOKGClkL",
 				"type": "block",
 				"position": {
@@ -342,26 +394,6 @@
 					"y": 250,
 					"w": 260,
 					"h": 80
-				}
-			},
-			{
-				"item": "viz_HPsm8cqG",
-				"type": "block",
-				"position": {
-					"x": 230,
-					"y": 1100,
-					"w": 60,
-					"h": 40
-				}
-			},
-			{
-				"item": "viz_Yn0109pu",
-				"type": "block",
-				"position": {
-					"x": 1160,
-					"y": 920,
-					"w": 20,
-					"h": 20
 				}
 			},
 			{
@@ -398,8 +430,8 @@
 				"item": "viz_jdckmm7B",
 				"type": "block",
 				"position": {
-					"x": 300,
-					"y": 580,
+					"x": 310,
+					"y": 910,
 					"w": 300,
 					"h": 80
 				}
@@ -421,6 +453,26 @@
 					"x": 930,
 					"y": 580,
 					"w": 340,
+					"h": 80
+				}
+			},
+			{
+				"item": "viz_rz0JLHIs",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 910,
+					"w": 270,
+					"h": 80
+				}
+			},
+			{
+				"item": "viz_OiNQGYup",
+				"type": "block",
+				"position": {
+					"x": 300,
+					"y": 580,
+					"w": 300,
 					"h": 80
 				}
 			}

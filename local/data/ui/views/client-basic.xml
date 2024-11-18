@@ -49,17 +49,6 @@
 			},
 			"name": "IDP mode search"
 		},
-		"ds_z0jEHn3e": {
-			"type": "ds.search",
-			"options": {
-				"query": "index=netskope_json1 sourcetype=nsconfig host=\"$field1$\" source=\"*nsconfig.json\" AND NOT source=\"*prelogon_nsconfig.json\"\n| rename clientConfig.configurationName as 001.clientConfig.configurationName\n| eval 002.cache.lastClientUpdatedTimestamp=strftime('cache.lastClientUpdatedTimestamp', \"%Y/%m/%d %H:%M:%S\")\n| eval 003.cache.configUpdateTimestamp=strftime('cache.configUpdateTimestamp', \"%Y/%m/%d %H:%M:%S\")\n| rename \nclientConfig.clientUpdate* as 004.clientConfig.clientUpdate*,\n| table 00*\n| transpose 0 column_name=\"header\":\n| fields - \"column\"",
-				"queryParameters": {
-					"earliest": "0",
-					"latest": ""
-				}
-			},
-			"name": "nsconfig.json - update settings"
-		},
 		"ds_3BW1BQjy": {
 			"type": "ds.search",
 			"options": {
@@ -195,13 +184,46 @@
 		"ds_nPQ7im1n_ds_xwxresdO": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" \"IdPProvisioning.cpp\" \n| table  _raw\n| sort _raw",
+				"query": "index=netskope_client1 host=\"$field1$\" \"IdPProvisioning.cpp\"\n| table _raw\n| sort _raw",
 				"queryParameters": {
-					"earliest": "0",
-					"latest": "now"
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
 				}
 			},
 			"name": "IDP enroll status"
+		},
+		"ds_LASvWJH6_ds_nPQ7im1n_ds_xwxresdO": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" \"user input post payload is\" OR \"Change State from\" OR \"systemtray Service status\"\n| rex field=_raw \"(?<LogTime>\\d{4}\\/\\d{2}\\/\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*TenantName=(?<Tenant>.*)&UTCEpoch=(?<UTCEpoch>.*)\"\n| rex field=_raw \"(?<LogTime>\\d{4}\\/\\d{2}\\/\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*State\\sfrom:\\s(?<FromTo>.*)\"\n| rex field=_raw \"(?<LogTime>\\d{4}\\/\\d{2}\\/\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*Service\\sstatus\\s:\\s(?<ServiceStatus>.*)\"\n| eval MSG=if(isnotnull(FromTo), 'FromTo', 'MSG')\n| eval MSG=if(isnotnull(UTCEpoch), Tenant.\" \".UTCEpoch.\" (\".strftime(UTCEpoch, \"%Y-%m-%d %H:%M:%S\").\")\", 'MSG')\n| eval MSG=if(isnotnull(ServiceStatus), 'ServiceStatus', 'MSG')\n| table LogTime, MSG\n| sort LogTime",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "IDP enroll status change"
+		},
+		"ds_Zc584eYm": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" \"IdPProvisioning.cpp\" \n| table _raw\n| sort _raw",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "Enroll status"
+		},
+		"ds_HvnIp6ON_ds_LASvWJH6_ds_nPQ7im1n_ds_xwxresdO": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" \"nsEnrollmentToken.cpp\"\n| rex field=_raw \"cpp:\\d+\\s+(?<MSG>.*)\"\n| stats values(MSG) as Error",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "Secure enrollment registory"
 		}
 	},
 	"visualizations": {
@@ -438,19 +460,102 @@
 				"fontSize": "extraLarge"
 			}
 		},
-		"viz_7HXGx3lr": {
+		"viz_2p9qfOT1": {
+			"type": "splunk.table",
+			"options": {
+				"count": 300,
+				"dataOverlayMode": "none",
+				"drilldown": "none",
+				"showRowNumbers": false,
+				"showInternalFields": false,
+				"columnFormat": {
+					"Tenant": {
+						"width": 60
+					},
+					"UTCEpoch": {
+						"width": 60
+					},
+					"UTCtime": {
+						"width": 60
+					},
+					"From": {
+						"width": 123
+					},
+					"LogTime": {
+						"width": 60
+					}
+				},
+				"fontSize": "extraSmall"
+			},
+			"dataSources": {
+				"primary": "ds_LASvWJH6_ds_nPQ7im1n_ds_xwxresdO"
+			},
+			"title": "Enroll status"
+		},
+		"viz_2fawUWg6": {
 			"type": "splunk.table",
 			"options": {
 				"count": 100,
 				"dataOverlayMode": "none",
 				"drilldown": "none",
 				"showRowNumbers": false,
-				"showInternalFields": false
+				"showInternalFields": false,
+				"columnFormat": {
+					"Tenant": {
+						"width": 60
+					},
+					"UTCEpoch": {
+						"width": 60
+					},
+					"UTCtime": {
+						"width": 60
+					},
+					"From": {
+						"width": 123
+					},
+					"LogTime": {
+						"width": 60
+					}
+				},
+				"fontSize": "extraSmall"
 			},
 			"dataSources": {
-				"primary": "ds_nPQ7im1n_ds_xwxresdO"
+				"primary": "ds_Zc584eYm"
 			},
 			"title": "Enroll status"
+		},
+		"viz_rhzcrSTR": {
+			"type": "splunk.table",
+			"options": {
+				"count": 100,
+				"dataOverlayMode": "none",
+				"drilldown": "none",
+				"showRowNumbers": false,
+				"showInternalFields": false,
+				"columnFormat": {
+					"Tenant": {
+						"width": 60
+					},
+					"UTCEpoch": {
+						"width": 60
+					},
+					"UTCtime": {
+						"width": 60
+					},
+					"From": {
+						"width": 123
+					},
+					"LogTime": {
+						"width": 60
+					}
+				},
+				"fontSize": "extraSmall"
+			},
+			"dataSources": {
+				"primary": "ds_HvnIp6ON_ds_LASvWJH6_ds_nPQ7im1n_ds_xwxresdO"
+			},
+			"title": "Secure Enrollment - registory doesn't exist",
+			"description": "AuthenticationToken = \"Software\\\\Netskope\\\\SecureToken\\\\AuthenticationToken\", EncryptionToken= \"Software\\\\Netskope\\\\SecureToken\\\\EncryptionToken\""
 		}
 	},
 	"inputs": {
@@ -516,9 +621,9 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 730,
+					"y": 710,
 					"w": 1380,
-					"h": 410
+					"h": 430
 				}
 			},
 			{
@@ -558,7 +663,7 @@
 					"x": 710,
 					"y": 1690,
 					"w": 700,
-					"h": 270
+					"h": 260
 				}
 			},
 			{
@@ -567,7 +672,7 @@
 				"position": {
 					"x": 20,
 					"y": 1530,
-					"w": 670,
+					"w": 660,
 					"h": 130
 				}
 			},
@@ -637,7 +742,7 @@
 				"position": {
 					"x": 740,
 					"y": 1240,
-					"w": 660,
+					"w": 670,
 					"h": 190
 				}
 			},
@@ -648,14 +753,14 @@
 					"x": 10,
 					"y": 2410,
 					"w": 1410,
-					"h": 530
+					"h": 1200
 				}
 			},
 			{
 				"item": "viz_a83r9Cfd",
 				"type": "block",
 				"position": {
-					"x": 730,
+					"x": 710,
 					"y": 1530,
 					"w": 700,
 					"h": 130
@@ -677,18 +782,38 @@
 				"position": {
 					"x": 20,
 					"y": 1980,
-					"w": 700,
+					"w": 660,
 					"h": 300
 				}
 			},
 			{
-				"item": "viz_7HXGx3lr",
+				"item": "viz_2p9qfOT1",
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 2470,
+					"y": 2870,
 					"w": 1390,
-					"h": 260
+					"h": 380
+				}
+			},
+			{
+				"item": "viz_2fawUWg6",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 2480,
+					"w": 1390,
+					"h": 380
+				}
+			},
+			{
+				"item": "viz_rhzcrSTR",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 3270,
+					"w": 570,
+					"h": 200
 				}
 			}
 		],
