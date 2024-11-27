@@ -87,8 +87,8 @@
 			"options": {
 				"query": "index=netskope_client1 sourcetype=nsdebuglog\n| table host\n| dedup host\n| sort -host",
 				"queryParameters": {
-					"earliest": "0",
-					"latest": ""
+					"earliest": "-2mon",
+					"latest": "now"
 				}
 			},
 			"name": "Select Client log"

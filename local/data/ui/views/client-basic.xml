@@ -76,8 +76,8 @@
 			"options": {
 				"query": "index=netskope_client1 sourcetype=nsdebuglog\n| table host\n| dedup host\n| sort -host",
 				"queryParameters": {
-					"earliest": "0",
-					"latest": ""
+					"earliest": "-2mon",
+					"latest": "now"
 				}
 			},
 			"name": "Select Client log"
@@ -224,6 +224,39 @@
 				}
 			},
 			"name": "Secure enrollment registory"
+		},
+		"ds_KlkPVFOL_ds_9djM1het_ds_xh0scyrN_ds_3BW1BQjy": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_json1 source=\"*nsconfig.json\" AND NOT source=\"*prelogon_nsconfig.json\" host=\"$field1$\"\n| table clientConfig.MDMSecureEnrollmentTokenEnabled",
+				"queryParameters": {
+					"earliest": "0",
+					"latest": ""
+				}
+			},
+			"name": "Secure Enrollment check"
+		},
+		"ds_cKNz5GTg_ds_KlkPVFOL_ds_9djM1het_ds_xh0scyrN_ds_3BW1BQjy": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_json1 source=\"*nsconfig.json\" AND NOT source=\"*prelogon_nsconfig.json\" host=\"$field1$\"\n| table clientConfig.MDMSecureEnrollmentTokenEnabled",
+				"queryParameters": {
+					"earliest": "0",
+					"latest": ""
+				}
+			},
+			"name": "Secure Enrollment check copy 1"
+		},
+		"ds_lLndJSn9_ds_SyuP7lQA": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"nsAppUI\" OR sourcetype=\"nsdebuglog\" \"m_enableSecureEnrollment\"\n| rex field=_raw \"(?<LogTime>\\d{4}\\/\\d{2}\\/\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3})\\s.*(?<m_enableSecureEnrollment>m_enableSecureEnrollment.*)\"\n| sort LogTime\n| dedup m_enableSecureEnrollment \n| table LogTime, m_enableSecureEnrollment",
+				"queryParameters": {
+					"earliest": "0",
+					"latest": "now"
+				}
+			},
+			"name": "Secure Enrollment - log"
 		}
 	},
 	"visualizations": {
@@ -556,6 +589,42 @@
 			},
 			"title": "Secure Enrollment - registory doesn't exist",
 			"description": "AuthenticationToken = \"Software\\\\Netskope\\\\SecureToken\\\\AuthenticationToken\", EncryptionToken= \"Software\\\\Netskope\\\\SecureToken\\\\EncryptionToken\""
+		},
+		"viz_hE6bfF33": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "### Secure Enrollment",
+				"backgroundColor": "#708794",
+				"fontSize": "extraLarge"
+			}
+		},
+		"viz_YwhyUIp0": {
+			"type": "splunk.singlevalue",
+			"dataSources": {
+				"primary": "ds_KlkPVFOL_ds_9djM1het_ds_xh0scyrN_ds_3BW1BQjy"
+			},
+			"containerOptions": {
+				"visibility": {
+					"hideWhenNoData": true
+				}
+			},
+			"title": "Secure enrollment - nsconfig",
+			"showProgressBar": false,
+			"showLastUpdated": false
+		},
+		"viz_tbkwWLyw": {
+			"type": "splunk.table",
+			"options": {
+				"count": 100,
+				"dataOverlayMode": "none",
+				"drilldown": "none",
+				"showRowNumbers": false,
+				"showInternalFields": false
+			},
+			"dataSources": {
+				"primary": "ds_lLndJSn9_ds_SyuP7lQA"
+			},
+			"title": "Secure enrollment - log"
 		}
 	},
 	"inputs": {
@@ -586,6 +655,16 @@
 			"height": 3600
 		},
 		"structure": [
+			{
+				"item": "viz_hE6bfF33",
+				"type": "block",
+				"position": {
+					"x": 10,
+					"y": 1470,
+					"w": 1410,
+					"h": 310
+				}
+			},
 			{
 				"item": "viz_UOKGClkL",
 				"type": "block",
@@ -651,7 +730,7 @@
 				"type": "block",
 				"position": {
 					"x": 10,
-					"y": 1470,
+					"y": 1800,
 					"w": 1410,
 					"h": 910
 				}
@@ -661,7 +740,7 @@
 				"type": "block",
 				"position": {
 					"x": 710,
-					"y": 1690,
+					"y": 2020,
 					"w": 700,
 					"h": 260
 				}
@@ -671,7 +750,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 1530,
+					"y": 1860,
 					"w": 660,
 					"h": 130
 				}
@@ -681,7 +760,7 @@
 				"type": "block",
 				"position": {
 					"x": 240,
-					"y": 1480,
+					"y": 1810,
 					"w": 40,
 					"h": 20
 				}
@@ -753,7 +832,7 @@
 					"x": 10,
 					"y": 2410,
 					"w": 1410,
-					"h": 1200
+					"h": 1230
 				}
 			},
 			{
@@ -761,7 +840,7 @@
 				"type": "block",
 				"position": {
 					"x": 710,
-					"y": 1530,
+					"y": 1860,
 					"w": 700,
 					"h": 130
 				}
@@ -771,7 +850,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 1690,
+					"y": 2020,
 					"w": 660,
 					"h": 260
 				}
@@ -781,7 +860,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 1980,
+					"y": 2310,
 					"w": 660,
 					"h": 300
 				}
@@ -791,7 +870,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 2870,
+					"y": 3010,
 					"w": 1390,
 					"h": 380
 				}
@@ -801,7 +880,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 2480,
+					"y": 2620,
 					"w": 1390,
 					"h": 380
 				}
@@ -810,10 +889,30 @@
 				"item": "viz_rhzcrSTR",
 				"type": "block",
 				"position": {
-					"x": 20,
-					"y": 3270,
-					"w": 570,
+					"x": 910,
+					"y": 1520,
+					"w": 500,
 					"h": 200
+				}
+			},
+			{
+				"item": "viz_YwhyUIp0",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 1520,
+					"w": 360,
+					"h": 190
+				}
+			},
+			{
+				"item": "viz_tbkwWLyw",
+				"type": "block",
+				"position": {
+					"x": 400,
+					"y": 1520,
+					"w": 500,
+					"h": 190
 				}
 			}
 		],

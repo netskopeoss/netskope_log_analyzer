@@ -8,7 +8,7 @@
 		"ds_nwd5jErf": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=npadebuglog sourcetype=npadebuglog \"Getting policy rule\" OR \"No matching\"\n| rex field=_raw \"(?<LogTime>\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3})\\s\\+.*host\\s(?<dsthost>.*)\\sip\\s(?<hex>.*),\\sproto\\s(?<proto>.*)\\sport\\s(?<port>.*)\"\n| rex field=hex \"(?<d1>[0-9A-Fa-f]{1,2})(?<d2>[0-9A-Fa-f]{2})(?<d3>[0-9A-Fa-f]{2})(?<d4>[0-9A-Fa-f]{2})\"\n| rex field=_raw \"(?<msg>No\\smatching.*)\"\n| eval ip_from_Hex=if(isnotnull(hex), tostring(tonumber(d4,16))+\".\"+tostring(tonumber(d3,16))+\".\"+tostring(tonumber(d2,16))+\".\"+tostring(tonumber(d1,16)), null)\n| eval dsthost=if(isnull('dsthost'), msg, dsthost)\n| table LogTime, dsthost, hex, ip_from_Hex, proto, port\n| sort LogTime",
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=npadebuglog sourcetype=npadebuglog \"Getting policy rule\" OR \"No matching\"\n| rex field=_raw \"(?<LogTime>\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3})\\s.*host\\s(?<dsthost>.*)\\sip\\s(?<hex>.*),\\sproto\\s(?<proto>.*)\\sport\\s(?<port>.*)\"\n| rex field=hex \"(?<d1>[0-9A-Fa-f]{1,2})(?<d2>[0-9A-Fa-f]{2})(?<d3>[0-9A-Fa-f]{2})(?<d4>[0-9A-Fa-f]{2})\"\n| rex field=_raw \"(?<msg>No\\smatching.*)\"\n| eval ip_from_Hex=if(isnotnull(hex), tostring(tonumber(d4,16))+\".\"+tostring(tonumber(d3,16))+\".\"+tostring(tonumber(d2,16))+\".\"+tostring(tonumber(d1,16)), null)\n| eval dsthost=if(isnull('dsthost'), msg, dsthost)\n| table LogTime, dsthost, hex, ip_from_Hex, proto, port\n| sort LogTime",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"
@@ -54,8 +54,8 @@
 			"options": {
 				"query": "index=netskope_client1 sourcetype=nsdebuglog\n| table host\n| dedup host\n| sort -host",
 				"queryParameters": {
-					"earliest": "0",
-					"latest": ""
+					"earliest": "-2mon",
+					"latest": "now"
 				}
 			},
 			"name": "Select Client log"
@@ -129,7 +129,7 @@
 		"ds_YSgjGLGw_ds_mzmNhkaL_ds_v57DBEEj_ds_hLXoE9n0": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog \"nsDnsResolver.cpp\" AND \"dnsResolver\" AND NOT Failed\n| rex field=_raw \"(?<Gateway>gateway.*)\\sby\\s(?<DNS>.*)\" \n| eval DNS=DNS.\"_\".Gateway\n| stats count by DNS\n| sort -count",
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=npadebuglog \"gw_resolution\"\n| rex field=_raw \"Device\\sInfo:\\s(?<DeviceInfo>.*)\"\n| spath input=DeviceInfo\n| stats count by device.assessment.gw_resolution",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"
@@ -191,6 +191,28 @@
 				}
 			},
 			"name": "NPA user"
+		},
+		"ds_a2c3mLQy_ds_nwd5jErf": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=npadebuglog sourcetype=\"npadebuglog\"  \"set clientId\"\n| rex field=_raw \"(?<LogTime>\\d{4}[-|\\/]\\d{2}[-|\\/]\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*clientId\\s(?<clientId>.*)\" \n| table LogTime, clientId\n| sort LogTime",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "NPA clientId"
+		},
+		"ds_JmylvZNC_ds_nwd5jErf": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=npadebuglog \"Added protocols\"\n| rex field=_raw \"Added\\sprotocols\\s(?<AddedProtocols>.*)\"\n| stats values(AddedProtocols) as AddedProtocols",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "Private app - IP based entries"
 		}
 	},
 	"visualizations": {
@@ -325,8 +347,8 @@
 			"showLastUpdated": false,
 			"options": {
 				"center": [
-					-20.96143723054537,
-					122.69531250000705
+					-8.75479217970559,
+					121.28906250000921
 				],
 				"zoom": 0
 			}
@@ -358,14 +380,16 @@
 			}
 		},
 		"viz_NBXJPXYn": {
-			"type": "splunk.table",
+			"type": "splunk.pie",
 			"dataSources": {
 				"primary": "ds_YSgjGLGw_ds_mzmNhkaL_ds_v57DBEEj_ds_hLXoE9n0"
 			},
 			"title": "DNS resolved",
 			"containerOptions": {},
 			"showProgressBar": false,
-			"showLastUpdated": false
+			"showLastUpdated": false,
+			"options": {},
+			"context": {}
 		},
 		"viz_UZlu5Deh": {
 			"type": "splunk.column",
@@ -472,6 +496,35 @@
 				"primary": "ds_nz8SDx8s_ds_uymu0ww9"
 			},
 			"title": "NPA - user"
+		},
+		"viz_fl62w46K": {
+			"type": "splunk.table",
+			"options": {
+				"dataOverlayMode": "none",
+				"drilldown": "none",
+				"showRowNumbers": false,
+				"showInternalFields": false,
+				"count": 1000
+			},
+			"dataSources": {
+				"primary": "ds_a2c3mLQy_ds_nwd5jErf"
+			},
+			"title": "clientId",
+			"description": "Use this value when seach backend log"
+		},
+		"viz_cKPZKfUE": {
+			"type": "splunk.table",
+			"options": {
+				"dataOverlayMode": "none",
+				"drilldown": "none",
+				"showRowNumbers": false,
+				"showInternalFields": false,
+				"count": 1000
+			},
+			"dataSources": {
+				"primary": "ds_JmylvZNC_ds_nwd5jErf"
+			},
+			"title": "Private app - IP entries"
 		}
 	},
 	"inputs": {
@@ -499,7 +552,7 @@
 		"type": "absolute",
 		"options": {
 			"width": 1440,
-			"height": 6000
+			"height": 10000
 		},
 		"structure": [
 			{
@@ -547,7 +600,7 @@
 				"type": "block",
 				"position": {
 					"x": 710,
-					"y": 80,
+					"y": 110,
 					"w": 700,
 					"h": 190
 				}
@@ -557,7 +610,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 80,
+					"y": 110,
 					"w": 680,
 					"h": 190
 				}
@@ -567,7 +620,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 740,
+					"y": 770,
 					"w": 1390,
 					"h": 250
 				}
@@ -597,7 +650,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 280,
+					"y": 310,
 					"w": 1390,
 					"h": 450
 				}
@@ -686,10 +739,30 @@
 				"item": "viz_dUGYORVE",
 				"type": "block",
 				"position": {
-					"x": 470,
-					"y": 2700,
+					"x": 550,
+					"y": 20,
+					"w": 850,
+					"h": 80
+				}
+			},
+			{
+				"item": "viz_fl62w46K",
+				"type": "block",
+				"position": {
+					"x": 0,
+					"y": 5580,
 					"w": 1390,
-					"h": 130
+					"h": 680
+				}
+			},
+			{
+				"item": "viz_cKPZKfUE",
+				"type": "block",
+				"position": {
+					"x": 170,
+					"y": 3960,
+					"w": 1390,
+					"h": 680
 				}
 			}
 		],
