@@ -3,12 +3,12 @@
   <fieldset submitButton="false">
     <input type="dropdown" token="field1">
       <label>Host</label>
-      <fieldForLabel>host</fieldForLabel>
-      <fieldForValue>host</fieldForValue>
+      <fieldForLabel>hosts</fieldForLabel>
+      <fieldForValue>hosts</fieldForValue>
       <search>
-        <query>index=netskope_publisher1 sourcetype="publisher"
-| table host
-| dedup host</query>
+        <query>| tstats values(host) as hosts where index=netskope_publisher1 by host
+| table hosts
+| sort -hosts</query>
         <earliest>0</earliest>
         <latest></latest>
       </search>

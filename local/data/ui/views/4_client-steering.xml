@@ -85,7 +85,7 @@
 		"ds_6a2VT9JD": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 sourcetype=nsdebuglog\n| table host\n| dedup host\n| sort -host",
+				"query": "| tstats values(host) as hosts where index=netskope_client1 by host\n| table hosts\n| sort -hosts",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"

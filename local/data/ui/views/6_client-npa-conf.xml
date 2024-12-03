@@ -52,7 +52,7 @@
 		"ds_6a2VT9JD": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 sourcetype=nsdebuglog\n| table host\n| dedup host\n| sort -host",
+				"query": "| tstats values(host) as hosts where index=netskope_client1 by host\n| table hosts\n| sort -hosts",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"
@@ -213,22 +213,43 @@
 				}
 			},
 			"name": "Private app - IP based entries"
+		},
+		"ds_HudJgaQT_ds_p8PZ4Okn": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=npadebuglog \"Adding\" AND \"Rule\"\n| rex field=_raw \"\\sRule\\s(?<rule>[\\s\\S]*)\"\n| rex field=rule \"Name:\\s(?<Policy>.*)\"\n| rex field=rule \"(?<Target>.*:.*:.*;)\"\n| rex field=rule \"Action:(?<Action>.*)\"\n| rex field=rule \"Publisher[s]:(?<Publisher>.*)\"\n| rex field=rule \"Use\\sPrivate\\sDNS\\:(?<Use_Private_DNS>.*)\"\n| fillnull value=null Policy, Target, Action, Stitcher, Publisher, Use_Private_DNS\n| stats values(Target) as Target count by Policy, Publisher, Action,  Use_Private_DNS\n| sort -count",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "Rule copy 1"
 		}
 	},
 	"visualizations": {
 		"viz_WHKIZd1n": {
 			"type": "splunk.table",
 			"options": {
-				"dataOverlayMode": "none",
-				"drilldown": "none",
-				"showRowNumbers": false,
-				"showInternalFields": false,
-				"count": 1000
+				"count": 100,
+				"columnFormat": {
+					"ip_from_Hex": {
+						"width": 129
+					},
+					"dsthost": {
+						"width": 255
+					},
+					"LogTime": {
+						"width": 231
+					}
+				}
 			},
 			"dataSources": {
 				"primary": "ds_nwd5jErf"
 			},
-			"title": "NPA - Access attempt"
+			"title": "NPA - Access attempt",
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false
 		},
 		"viz_mXPqgh8E": {
 			"type": "splunk.table",
@@ -260,150 +281,6 @@
 				"primary": "ds_p8PZ4Okn"
 			},
 			"title": "Rule"
-		},
-		"viz_zI6AvR56": {
-			"type": "splunk.column",
-			"dataSources": {
-				"primary": "ds_hLXoE9n0"
-			},
-			"title": "Timechart",
-			"containerOptions": {},
-			"showProgressBar": false,
-			"showLastUpdated": false,
-			"options": {
-				"legendDisplay": "bottom"
-			}
-		},
-		"viz_UOKGClkL": {
-			"type": "splunk.markdown",
-			"options": {
-				"markdown": "### Connceted PoPs information",
-				"backgroundColor": "#708794",
-				"fontSize": "extraLarge"
-			}
-		},
-		"viz_3vBhFKl4": {
-			"type": "splunk.bar",
-			"dataSources": {
-				"primary": "ds_9ze5Vfw0"
-			},
-			"title": "GSLB RTT",
-			"containerOptions": {},
-			"showProgressBar": false,
-			"showLastUpdated": false
-		},
-		"viz_pFWd9BS1": {
-			"type": "splunk.pie",
-			"dataSources": {
-				"primary": "ds_v57DBEEj_ds_hLXoE9n0"
-			},
-			"title": "Pie chart",
-			"containerOptions": {},
-			"showProgressBar": false,
-			"showLastUpdated": false
-		},
-		"viz_sfVd5jAP": {
-			"type": "splunk.column",
-			"dataSources": {
-				"primary": "ds_USxTAkrP_ds_9ze5Vfw0"
-			},
-			"title": "Avg RTT after connection",
-			"containerOptions": {},
-			"showProgressBar": false,
-			"showLastUpdated": false,
-			"options": {
-				"legendDisplay": "bottom",
-				"yAxisScale": "log",
-				"stackMode": "stacked"
-			}
-		},
-		"viz_E52xk4if": {
-			"type": "splunk.table",
-			"dataSources": {
-				"primary": "ds_mzmNhkaL_ds_v57DBEEj_ds_hLXoE9n0"
-			},
-			"title": "DNS failure",
-			"containerOptions": {},
-			"showProgressBar": false,
-			"showLastUpdated": false,
-			"options": {},
-			"context": {}
-		},
-		"viz_BlwX4Azv": {
-			"type": "splunk.singlevalueicon",
-			"options": {
-				"showValue": false,
-				"icon": "splunk-enterprise-kvstore://icon-load-balancer__4a4261a1-51e2-45aa-b89d-2911d1ceac62.svg"
-			}
-		},
-		"viz_fZGekanA": {
-			"type": "splunk.map",
-			"dataSources": {
-				"primary": "ds_7coO7GaE_ds_USxTAkrP_ds_9ze5Vfw0"
-			},
-			"title": "Connected PoP",
-			"containerOptions": {},
-			"showProgressBar": false,
-			"showLastUpdated": false,
-			"options": {
-				"center": [
-					-8.75479217970559,
-					121.28906250000921
-				],
-				"zoom": 0
-			}
-		},
-		"viz_9QlENcr9": {
-			"type": "splunk.markdown",
-			"options": {
-				"markdown": "### GSLB and DNS",
-				"backgroundColor": "#708794",
-				"fontSize": "extraLarge"
-			}
-		},
-		"viz_JiZsSFaL": {
-			"type": "splunk.table",
-			"dataSources": {
-				"primary": "ds_HuwBRM3v_ds_hLXoE9n0"
-			},
-			"title": "GSLB setting",
-			"containerOptions": {},
-			"showProgressBar": false,
-			"showLastUpdated": false,
-			"options": {
-				"columnFormat": {
-					"header:": {
-						"width": 92
-					}
-				},
-				"count": 1000
-			}
-		},
-		"viz_NBXJPXYn": {
-			"type": "splunk.pie",
-			"dataSources": {
-				"primary": "ds_YSgjGLGw_ds_mzmNhkaL_ds_v57DBEEj_ds_hLXoE9n0"
-			},
-			"title": "DNS resolved",
-			"containerOptions": {},
-			"showProgressBar": false,
-			"showLastUpdated": false,
-			"options": {},
-			"context": {}
-		},
-		"viz_UZlu5Deh": {
-			"type": "splunk.column",
-			"dataSources": {
-				"primary": "ds_QkgEDkPy_ds_mzmNhkaL_ds_v57DBEEj_ds_hLXoE9n0"
-			},
-			"title": "DNS failure",
-			"containerOptions": {},
-			"showProgressBar": false,
-			"showLastUpdated": false,
-			"options": {
-				"legendDisplay": "bottom",
-				"stackMode": "stacked"
-			}
 		},
 		"viz_1t72eCH3": {
 			"type": "splunk.markdown",
@@ -444,74 +321,6 @@
 			},
 			"title": "Rule"
 		},
-		"viz_GuQG1ydt": {
-			"type": "splunk.table",
-			"options": {
-				"dataOverlayMode": "none",
-				"drilldown": "none",
-				"showRowNumbers": false,
-				"showInternalFields": false,
-				"count": 1000,
-				"columnFormat": {
-					"NextPrompt": {
-						"width": 60
-					},
-					"Expiry": {
-						"width": 60
-					},
-					"CurrentTime": {
-						"width": 60
-					}
-				}
-			},
-			"dataSources": {
-				"primary": "ds_m1xwGxUM_ds_nwd5jErf"
-			},
-			"title": "NPA - Re-atuh period"
-		},
-		"viz_IUR5VWUJ": {
-			"type": "splunk.table",
-			"options": {
-				"dataOverlayMode": "none",
-				"drilldown": "none",
-				"showRowNumbers": false,
-				"showInternalFields": false,
-				"count": 1000
-			},
-			"dataSources": {
-				"primary": "ds_uymu0ww9"
-			},
-			"title": "NPA - Re-atuh period"
-		},
-		"viz_dUGYORVE": {
-			"type": "splunk.table",
-			"options": {
-				"dataOverlayMode": "none",
-				"drilldown": "none",
-				"showRowNumbers": false,
-				"showInternalFields": false,
-				"count": 1000
-			},
-			"dataSources": {
-				"primary": "ds_nz8SDx8s_ds_uymu0ww9"
-			},
-			"title": "NPA - user"
-		},
-		"viz_fl62w46K": {
-			"type": "splunk.table",
-			"options": {
-				"dataOverlayMode": "none",
-				"drilldown": "none",
-				"showRowNumbers": false,
-				"showInternalFields": false,
-				"count": 1000
-			},
-			"dataSources": {
-				"primary": "ds_a2c3mLQy_ds_nwd5jErf"
-			},
-			"title": "clientId",
-			"description": "Use this value when seach backend log"
-		},
 		"viz_cKPZKfUE": {
 			"type": "splunk.table",
 			"options": {
@@ -525,6 +334,14 @@
 				"primary": "ds_JmylvZNC_ds_nwd5jErf"
 			},
 			"title": "Private app - IP entries"
+		},
+		"viz_631cKUmZ": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "### Traffic",
+				"backgroundColor": "#708794",
+				"fontSize": "extraLarge"
+			}
 		}
 	},
 	"inputs": {
@@ -556,133 +373,23 @@
 		},
 		"structure": [
 			{
+				"item": "viz_631cKUmZ",
+				"type": "block",
+				"position": {
+					"x": 10,
+					"y": 1780,
+					"w": 1420,
+					"h": 1470
+				}
+			},
+			{
 				"item": "viz_1t72eCH3",
 				"type": "block",
 				"position": {
 					"x": 10,
-					"y": 2780,
-					"w": 1410,
-					"h": 1710
-				}
-			},
-			{
-				"item": "viz_9QlENcr9",
-				"type": "block",
-				"position": {
-					"x": 10,
-					"y": 1050,
-					"w": 1410,
-					"h": 1710
-				}
-			},
-			{
-				"item": "viz_UOKGClkL",
-				"type": "block",
-				"position": {
-					"x": 10,
 					"y": 10,
-					"w": 1410,
-					"h": 1020
-				}
-			},
-			{
-				"item": "viz_3vBhFKl4",
-				"type": "block",
-				"position": {
-					"x": 20,
-					"y": 2310,
-					"w": 1390,
-					"h": 390
-				}
-			},
-			{
-				"item": "viz_zI6AvR56",
-				"type": "block",
-				"position": {
-					"x": 710,
-					"y": 110,
-					"w": 700,
-					"h": 190
-				}
-			},
-			{
-				"item": "viz_pFWd9BS1",
-				"type": "block",
-				"position": {
-					"x": 20,
-					"y": 110,
-					"w": 680,
-					"h": 190
-				}
-			},
-			{
-				"item": "viz_sfVd5jAP",
-				"type": "block",
-				"position": {
-					"x": 20,
-					"y": 770,
-					"w": 1390,
-					"h": 250
-				}
-			},
-			{
-				"item": "viz_E52xk4if",
-				"type": "block",
-				"position": {
-					"x": 20,
-					"y": 1650,
-					"w": 1390,
-					"h": 260
-				}
-			},
-			{
-				"item": "viz_BlwX4Azv",
-				"type": "block",
-				"position": {
-					"x": 330,
-					"y": 20,
-					"w": 90,
-					"h": 30
-				}
-			},
-			{
-				"item": "viz_fZGekanA",
-				"type": "block",
-				"position": {
-					"x": 20,
-					"y": 310,
-					"w": 1390,
-					"h": 450
-				}
-			},
-			{
-				"item": "viz_JiZsSFaL",
-				"type": "block",
-				"position": {
-					"x": 20,
-					"y": 1920,
-					"w": 1390,
-					"h": 380
-				}
-			},
-			{
-				"item": "viz_NBXJPXYn",
-				"type": "block",
-				"position": {
-					"x": 20,
-					"y": 1380,
-					"w": 1390,
-					"h": 260
-				}
-			},
-			{
-				"item": "viz_UZlu5Deh",
-				"type": "block",
-				"position": {
-					"x": 20,
-					"y": 1090,
-					"w": 1390,
-					"h": 280
+					"w": 1420,
+					"h": 1750
 				}
 			},
 			{
@@ -690,9 +397,9 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 3260,
-					"w": 1390,
-					"h": 500
+					"y": 500,
+					"w": 1400,
+					"h": 550
 				}
 			},
 			{
@@ -700,8 +407,8 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 3780,
-					"w": 1390,
+					"y": 1830,
+					"w": 1400,
 					"h": 680
 				}
 			},
@@ -710,58 +417,18 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 2820,
-					"w": 1390,
+					"y": 50,
+					"w": 1400,
 					"h": 430
-				}
-			},
-			{
-				"item": "viz_GuQG1ydt",
-				"type": "block",
-				"position": {
-					"x": 20,
-					"y": 4500,
-					"w": 1390,
-					"h": 390
-				}
-			},
-			{
-				"item": "viz_IUR5VWUJ",
-				"type": "block",
-				"position": {
-					"x": 10,
-					"y": 4910,
-					"w": 1390,
-					"h": 660
-				}
-			},
-			{
-				"item": "viz_dUGYORVE",
-				"type": "block",
-				"position": {
-					"x": 550,
-					"y": 20,
-					"w": 850,
-					"h": 80
-				}
-			},
-			{
-				"item": "viz_fl62w46K",
-				"type": "block",
-				"position": {
-					"x": 0,
-					"y": 5580,
-					"w": 1390,
-					"h": 680
 				}
 			},
 			{
 				"item": "viz_cKPZKfUE",
 				"type": "block",
 				"position": {
-					"x": 400,
-					"y": 4710,
-					"w": 1390,
+					"x": 20,
+					"y": 1070,
+					"w": 1400,
 					"h": 680
 				}
 			}

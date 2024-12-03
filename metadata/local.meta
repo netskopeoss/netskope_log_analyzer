@@ -43,7 +43,7 @@ modtime = 1707814197.648424000
 
 [views/publisher]
 version = 9.3.1
-modtime = 1730972264.721046000
+modtime = 1733195505.299882000
 
 [views/npa_client]
 version = 9.2.0.1
@@ -98,7 +98,7 @@ modtime = 1732693741.069797000
 
 [views/5_client-npa-connection]
 version = 9.3.1
-modtime = 1732780218.309577000
+modtime = 1733198097.333422000
 
 [views/3_client-connection]
 version = 9.3.1
@@ -106,12 +106,16 @@ modtime = 1732694803.885803000
 
 [views/4_client-steering]
 version = 9.3.1
-modtime = 1732694901.444796000
+modtime = 1733195367.209699000
 
 [views/6_client-npa-conf]
 version = 9.3.1
-modtime = 1732694953.519084000
+modtime = 1733198326.300025000
 
 [views/2_client-version]
 version = 9.3.1
-modtime = 1732695051.588310000
+modtime = 1733195182.059313000
+
+[views/1_client-basic]
+version = 9.3.1
+modtime = 1733195156.099260000

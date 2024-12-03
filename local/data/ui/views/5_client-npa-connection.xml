@@ -52,7 +52,7 @@
 		"ds_6a2VT9JD": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 sourcetype=nsdebuglog\n| table host\n| dedup host\n| sort -host",
+				"query": "| tstats values(host) as hosts where index=netskope_client1 by host\n| table hosts\n| sort -hosts",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"
@@ -235,6 +235,17 @@
 				}
 			},
 			"name": "NPA device info 2"
+		},
+		"ds_06TjpE1c_ds_9ze5Vfw0": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\"  sourcetype=nsdebuglog \"post client rtt\" \n| rex field=_raw \"\\[(?<Client>.*)\\]:\\spost\\sclient\\srtt\\spop\\:(?<PoP>.*)\\sip\\:(?<GatewayIP>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\srtt:(?<RTT>\\d+)\"\n| eval Dst=Client.\"_\".PoP.\"_\".GatewayIP\n| stats avg(RTT) as AvgRTT by Dst\n| eval AvgRTT=round(AvgRTT, 2)\n| sort AvgRTT, Dst",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "GSLB RTT copy 1"
 		}
 	},
 	"visualizations": {
@@ -470,6 +481,19 @@
 				"primary": "ds_mQwCCCTp_ds_89suN3V0_ds_nz8SDx8s_ds_uymu0ww9"
 			},
 			"title": "NPA - device info2"
+		},
+		"viz_LC4eSjn3": {
+			"type": "splunk.table",
+			"dataSources": {
+				"primary": "ds_a2c3mLQy_ds_nwd5jErf"
+			},
+			"title": "Clientid",
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false,
+			"options": {
+				"count": 100
+			}
 		}
 	},
 	"inputs": {
@@ -658,6 +682,16 @@
 					"y": 780,
 					"w": 1400,
 					"h": 360
+				}
+			},
+			{
+				"item": "viz_LC4eSjn3",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 4020,
+					"w": 1390,
+					"h": 480
 				}
 			}
 		],
