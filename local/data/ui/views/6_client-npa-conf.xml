@@ -1,6 +1,6 @@
 
 <dashboard version="2" theme="dark">
-    <label>Client NPA information</label>
+    <label>NPA Client traffic</label>
     <description></description>
     <definition><![CDATA[
 {
@@ -54,8 +54,8 @@
 			"options": {
 				"query": "index=netskope_client1 sourcetype=nsdebuglog\n| table host\n| dedup host\n| sort -host",
 				"queryParameters": {
-					"earliest": "-2mon",
-					"latest": "now"
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
 				}
 			},
 			"name": "Select Client log"
@@ -759,8 +759,8 @@
 				"item": "viz_cKPZKfUE",
 				"type": "block",
 				"position": {
-					"x": 170,
-					"y": 3960,
+					"x": 400,
+					"y": 4710,
 					"w": 1390,
 					"h": 680
 				}
@@ -771,7 +771,7 @@
 			"input_JBiR4uV0"
 		]
 	},
-	"title": "Client NPA information",
+	"title": "NPA Client traffic",
 	"description": "",
 	"defaults": {
 		"dataSources": {

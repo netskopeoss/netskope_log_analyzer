@@ -1,9 +1,10 @@
 <nav search_view="search" color="#67B5D9">
-  <view name="client-basic" default="true" />
-  <view name="client-version" />
-  <view name="client-connection" />
-  <view name="client-steering" />
-  <view name="client-npa" />
+  <view name="1_client-basic" default="true" />
+  <view name="2_client-version" />
+  <view name="3_client-connection" />
+  <view name="4_client-steering" />
+  <view name="5_client-npa-connection" />
+  <view name="6_client-npa-conf" />
   <view name="iOS" />
   <view name="publisher" />
   <view name="update-check" />

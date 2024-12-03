@@ -1,0 +1,692 @@
+
+<dashboard version="2" theme="dark">
+    <label>NPA Client connected PoP</label>
+    <description></description>
+    <definition><![CDATA[
+{
+	"dataSources": {
+		"ds_nwd5jErf": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=npadebuglog sourcetype=npadebuglog \"Getting policy rule\" OR \"No matching\"\n| rex field=_raw \"(?<LogTime>\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3})\\s.*host\\s(?<dsthost>.*)\\sip\\s(?<hex>.*),\\sproto\\s(?<proto>.*)\\sport\\s(?<port>.*)\"\n| rex field=hex \"(?<d1>[0-9A-Fa-f]{1,2})(?<d2>[0-9A-Fa-f]{2})(?<d3>[0-9A-Fa-f]{2})(?<d4>[0-9A-Fa-f]{2})\"\n| rex field=_raw \"(?<msg>No\\smatching.*)\"\n| eval ip_from_Hex=if(isnotnull(hex), tostring(tonumber(d4,16))+\".\"+tostring(tonumber(d3,16))+\".\"+tostring(tonumber(d2,16))+\".\"+tostring(tonumber(d1,16)), null)\n| eval dsthost=if(isnull('dsthost'), msg, dsthost)\n| table LogTime, dsthost, hex, ip_from_Hex, proto, port\n| sort LogTime",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "NPA - Access attempt search"
+		},
+		"ds_p8PZ4Okn": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=npadebuglog \"Adding\" AND \"Rule\"\n| rex field=_raw \"\\sRule\\s(?<rule>[\\s\\S]*)\"\n| rex field=rule \"Name:\\s(?<Policy>.*)\"\n| rex field=rule \"(?<Target>.*:.*:.*;)\"\n| rex field=rule \"Action:(?<Action>.*)\"\n| rex field=rule \"Publisher[s]:(?<Publisher>.*)\"\n| rex field=rule \"Use\\sPrivate\\sDNS\\:(?<Use_Private_DNS>.*)\"\n| fillnull value=null Policy, Target, Action, Stitcher, Publisher, Use_Private_DNS\n| stats values(Target) as Target count by Policy, Publisher, Action,  Use_Private_DNS\n| sort -count",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "Rule"
+		},
+		"ds_hLXoE9n0": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" \"TLS client established connection\" OR \"NPA Tunnel Status: Connected\"\n| rex field=_raw \"(?<NPA_GW>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\"\n| timechart count by NPA_GW",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "NPA Connected PoPs - Timechart"
+		},
+		"ds_7CpRsbSg": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\"\n| stats earliest(_time) AS Earliest, latest(_time) AS Latest by sourcetype\n| convert timeformat=\"%Y-%m-%d %H:%M:%S\" ctime(Earliest) ctime(Latest)",
+				"queryParameters": {
+					"earliest": "0",
+					"latest": ""
+				}
+			},
+			"name": "Log_timestamps"
+		},
+		"ds_6a2VT9JD": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 sourcetype=nsdebuglog\n| table host\n| dedup host\n| sort -host",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "Select Client log"
+		},
+		"ds_9ze5Vfw0": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\"  sourcetype=nsdebuglog \"post client rtt\" \n| rex field=_raw \"\\[(?<Client>.*)\\]:\\spost\\sclient\\srtt\\spop\\:(?<PoP>.*)\\sip\\:(?<GatewayIP>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\srtt:(?<RTT>\\d+)\"\n| eval Dst=Client.\"_\".PoP.\"_\".GatewayIP\n| stats avg(RTT) as AvgRTT by Dst\n| eval AvgRTT=round(AvgRTT, 2)\n| sort AvgRTT, Dst",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "GSLB RTT"
+		},
+		"ds_v57DBEEj_ds_hLXoE9n0": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\"  \"TLS client established connection\" OR \"NPA Tunnel Status: Connected\"\n| rex field=_raw \"(?<NPA_GW>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\"\n| stats count by NPA_GW",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "NPA Connected PoPs - Pie chart"
+		},
+		"ds_USxTAkrP_ds_9ze5Vfw0": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"npadebuglog\"  \"NPAGW\" AND \"RETRANS\" AND \"RTT\"\n| rex field=_raw \"NPAGW\\s(?<NPAGW>.*):\\sRETRANS.*RTT:(?<RTT>\\d+)ms,\"\n| timechart span=1h max(RTT) as RTT by NPAGW",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "NPP Avg RTT"
+		},
+		"ds_mzmNhkaL_ds_v57DBEEj_ds_hLXoE9n0": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog \"nsDnsResolver.cpp\" AND \"dnsResolver\" AND Failed\n| rex field=_raw \"(?<Gateway>gateway.*)\\sby\\s(?<DNS>.*)\" \n| eval DNS=DNS.\"_\".Gateway\n| stats count by DNS\n| sort -count",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "DNS failure"
+		},
+		"ds_7coO7GaE_ds_USxTAkrP_ds_9ze5Vfw0": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" \"TLS client established connection\" OR \"NPA Tunnel Status: Connected\"\n| rex field=_raw \"(?<GatewayIP>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\"\n| iplocation GatewayIP \n| geostats latfield=lat longfield=lon count by GatewayIP",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "NPA GatewayIP - Map"
+		},
+		"ds_HuwBRM3v_ds_hLXoE9n0": {
+			"type": "ds.search",
+			"options": {
+				"query": "host=\"$field1$\" index=netskope_json1 sourcetype=nsconfig source=\"*nsconfig.json\" AND NOT source=\"*prelogon_nsconfig.json\"\n| rename \ngslb.host as \"001. gslb.host\",\ngslb.port as \"002. gslb.port\",\nnpa.gslb.port as \"003. gslb.port\",\nnpa.gslb.port as \"004. gslb.port\",\nnpa_gslb_client* as \"005. npa_gslb_client*\"\n| table 0*\n| transpose 0 column_name=\"header\":\n| fields - \"column\"",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "GSLB setting"
+		},
+		"ds_YSgjGLGw_ds_mzmNhkaL_ds_v57DBEEj_ds_hLXoE9n0": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=npadebuglog \"gw_resolution\"\n| rex field=_raw \"Device\\sInfo:\\s(?<DeviceInfo>.*)\"\n| spath input=DeviceInfo\n| stats count by device.assessment.gw_resolution",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "DNS resolved"
+		},
+		"ds_QkgEDkPy_ds_mzmNhkaL_ds_v57DBEEj_ds_hLXoE9n0": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\"\nsourcetype=nsdebuglog \"nsDnsResolver.cpp\" AND \"dnsResolver\" AND \"*DNS\"\n| rex field=_raw \"(?<Gateway>gateway.*)\\sby\\s(?<DNS>.*)\" \n| eval MSG=DNS.\"_\".Gateway\n| timechart usenull=false count by MSG",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "DNS timechart"
+		},
+		"ds_7Y9oH6d8_ds_p8PZ4Okn": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_json1 host=\"$field1$\" source=\"*nssteering.json\" source=\"*nssteering.json\"\n| rename steering_config_name as \"001. steering_config_name\", private_* as \"002. private_*\"\n| table 00*, source\n| transpose",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "steering config NPA"
+		},
+		"ds_m1xwGxUM_ds_nwd5jErf": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" \"Next re-auth prompt at\" OR \"Reauthentication request received\" OR \"Shutdown packet received from gateway\" OR \"Change State from\" OR  \"Private Access=\"\n| rex field=_raw \"(?<LogTime>\\d{4}[-|\\/]\\d{2}[-|\\/]\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3})\" \n| rex field=_raw \"prompt\\sat\\s\\[(?<NextPrompt>.*)\\].*expiry\\sat\\s\\[(?<Expiry>.*)\\].*\\[(?<CurrentTime>.*)]\" \n| eval LogTime = replace(LogTime, \"-\", \"/\")\n| eval myNextPrompt=strftime(NextPrompt, \"%Y-%m-%d %H:%M:%S\")\n| eval myExpiry=strftime(Expiry, \"%y-%m-%d %H:%M:%S\")\n| eval myCurrentTime=strftime(CurrentTime, \"%y-%m-%d %H:%M:%S\")\n| eval Result=if(isnotnull(CurrentTime), if(Expiry-CurrentTime>10, \"Authentication likely succeeded.\", \"Authentication likely failed.\"), null())\n| eval Result=if(isnull(Result), _raw ,Result)\n| eval NextPrompt=NextPrompt.\" (\".myNextPrompt.\")\"\n| eval Expiry=Expiry.\" (\".myExpiry.\")\"\n| eval CurrentTime=CurrentTime.\" (\".myCurrentTime.\")\"\n| table LogTime, NextPrompt, Expiry, CurrentTime, Result\n| sort LogTime",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "NPA - Re-auth period"
+		},
+		"ds_uymu0ww9": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" \"user input post payload is\" OR \"Change State from\"\n| rex field=_raw \"(?<LogTime>\\d{4}\\/\\d{2}\\/\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*TenantName=(?<Tenant>.*)&UTCEpoch=(?<UTCEpoch>.*)\"\n| rex field=_raw \"(?<LogTime>\\d{4}\\/\\d{2}\\/\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*from:\\s(?<From>.*)\\sto\\s(?<To>.*)\"\n| eval UTCtime=if(isnull(UTCEpoch), null(), strftime(UTCEpoch, \"%Y-%m-%d %H:%M:%S\"))\n| eval UTCEpoch=UTCEpoch.\"(\".UTCtime.\")\"\n| table LogTime, Tenant, UTCEpoch, From, To\n| sort LogTime",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "IDP Enrollment"
+		},
+		"ds_nz8SDx8s_ds_uymu0ww9": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"nsAppUI\" \"systemtray Service status\" OR \"===\"\n| rex field=_raw \"(?<LogTime>\\d{4}[-|\\/]\\d{2}[-|\\/]\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*Service\\sstatus\\s:\\s\\[(?<field1>[^\\]]+)\\](?: \\[(?<field2>[^\\]]+)\\])?(?: \\[(?<field3>[^\\]]+)\\])?\"\n| table LogTime, field1 field2 field3\n| sort LogTime",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "System tray status"
+		},
+		"ds_a2c3mLQy_ds_nwd5jErf": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=npadebuglog sourcetype=\"npadebuglog\"  \"set clientId\"\n| rex field=_raw \"(?<LogTime>\\d{4}[-|\\/]\\d{2}[-|\\/]\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*clientId\\s(?<clientId>.*)\" \n| table LogTime, clientId\n| sort LogTime",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "NPA clientId"
+		},
+		"ds_JmylvZNC_ds_nwd5jErf": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=npadebuglog \"Added protocols\"\n| rex field=_raw \"Added\\sprotocols\\s(?<AddedProtocols>.*)\"\n| stats values(AddedProtocols) as AddedProtocols",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "Private app - IP based entries"
+		},
+		"ds_89suN3V0_ds_nz8SDx8s_ds_uymu0ww9": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"npadebuglog\" \"Device Info:\"\n| rex field=_raw \"(?<LogTime>\\d{4}[-|\\/]\\d{2}[-|\\/]\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*Device\\sInfo:\\s(?<DeviceInfo>.*)\"\n| spath input=DeviceInfo\n| eval device.assessment.last_logon_time=strftime('device.assessment.last_logon_time', \"%Y/%m/%d %H:%M:%S\")\n| rename device.assessment.* as *\n| table LogTime, user_email, last_logon_time,  last_logon_time, gw_resolution, machine_name, managed, npa_srpv2, on_prem_status, policyVersion, tunnel_type\n| sort LogTime",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "NPA device info"
+		},
+		"ds_mQwCCCTp_ds_89suN3V0_ds_nz8SDx8s_ds_uymu0ww9": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"npadebuglog\" \"Device Info:\"\n| rex field=_raw \"(?<LogTime>\\d{4}[-|\\/]\\d{2}[-|\\/]\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*Device\\sInfo:\\s(?<DeviceInfo>.*)\"\n| spath input=DeviceInfo\n| rename device.* as *\n| table LogTime, client_version, common_name, device_id_version, hardware_identifier, magic_identifier, netskope_device_id, vendor_identifier\n| sort LogTime",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "NPA device info 2"
+		}
+	},
+	"visualizations": {
+		"viz_zI6AvR56": {
+			"type": "splunk.column",
+			"dataSources": {
+				"primary": "ds_hLXoE9n0"
+			},
+			"title": "Timechart",
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false,
+			"options": {
+				"legendDisplay": "bottom"
+			}
+		},
+		"viz_UOKGClkL": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "### Connceted PoPs information",
+				"backgroundColor": "#708794",
+				"fontSize": "extraLarge"
+			}
+		},
+		"viz_3vBhFKl4": {
+			"type": "splunk.bar",
+			"dataSources": {
+				"primary": "ds_9ze5Vfw0"
+			},
+			"title": "GSLB RTT",
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false
+		},
+		"viz_pFWd9BS1": {
+			"type": "splunk.pie",
+			"dataSources": {
+				"primary": "ds_v57DBEEj_ds_hLXoE9n0"
+			},
+			"title": "Pie chart",
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false
+		},
+		"viz_sfVd5jAP": {
+			"type": "splunk.column",
+			"dataSources": {
+				"primary": "ds_USxTAkrP_ds_9ze5Vfw0"
+			},
+			"title": "Avg RTT after connection",
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false,
+			"options": {
+				"legendDisplay": "bottom",
+				"yAxisScale": "log",
+				"stackMode": "stacked"
+			}
+		},
+		"viz_E52xk4if": {
+			"type": "splunk.table",
+			"dataSources": {
+				"primary": "ds_mzmNhkaL_ds_v57DBEEj_ds_hLXoE9n0"
+			},
+			"title": "DNS failure",
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false,
+			"options": {},
+			"context": {}
+		},
+		"viz_BlwX4Azv": {
+			"type": "splunk.singlevalueicon",
+			"options": {
+				"showValue": false,
+				"icon": "splunk-enterprise-kvstore://icon-load-balancer__4a4261a1-51e2-45aa-b89d-2911d1ceac62.svg"
+			}
+		},
+		"viz_fZGekanA": {
+			"type": "splunk.map",
+			"dataSources": {
+				"primary": "ds_7coO7GaE_ds_USxTAkrP_ds_9ze5Vfw0"
+			},
+			"title": "Connected PoP",
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false,
+			"options": {
+				"center": [
+					-8.75479217970559,
+					121.28906250000921
+				],
+				"zoom": 0
+			}
+		},
+		"viz_9QlENcr9": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "### GSLB and DNS",
+				"backgroundColor": "#708794",
+				"fontSize": "extraLarge"
+			}
+		},
+		"viz_JiZsSFaL": {
+			"type": "splunk.table",
+			"dataSources": {
+				"primary": "ds_HuwBRM3v_ds_hLXoE9n0"
+			},
+			"title": "GSLB setting",
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false,
+			"options": {
+				"columnFormat": {
+					"header:": {
+						"width": 92
+					}
+				},
+				"count": 1000
+			}
+		},
+		"viz_NBXJPXYn": {
+			"type": "splunk.pie",
+			"dataSources": {
+				"primary": "ds_YSgjGLGw_ds_mzmNhkaL_ds_v57DBEEj_ds_hLXoE9n0"
+			},
+			"title": "DNS resolved",
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false,
+			"options": {},
+			"context": {}
+		},
+		"viz_UZlu5Deh": {
+			"type": "splunk.column",
+			"dataSources": {
+				"primary": "ds_QkgEDkPy_ds_mzmNhkaL_ds_v57DBEEj_ds_hLXoE9n0"
+			},
+			"title": "DNS failure",
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false,
+			"options": {
+				"legendDisplay": "bottom",
+				"stackMode": "stacked"
+			}
+		},
+		"viz_dUGYORVE": {
+			"type": "splunk.table",
+			"options": {
+				"dataOverlayMode": "none",
+				"drilldown": "none",
+				"showRowNumbers": false,
+				"showInternalFields": false,
+				"count": 1000,
+				"columnFormat": {
+					"LogTime": {
+						"width": 60
+					}
+				}
+			},
+			"dataSources": {
+				"primary": "ds_nz8SDx8s_ds_uymu0ww9"
+			},
+			"title": "System tray status"
+		},
+		"viz_8JfnUvT2": {
+			"type": "splunk.table",
+			"options": {
+				"dataOverlayMode": "none",
+				"drilldown": "none",
+				"showRowNumbers": false,
+				"showInternalFields": false,
+				"count": 1000,
+				"columnFormat": {
+					"client_version": {
+						"width": 87
+					},
+					"device.client_version": {
+						"width": 91
+					},
+					"npa_srpv2": {
+						"width": 60
+					},
+					"user_email": {
+						"width": 173
+					},
+					"LogTime": {
+						"width": 147
+					},
+					"last_logon_time": {
+						"width": 127
+					}
+				}
+			},
+			"dataSources": {
+				"primary": "ds_89suN3V0_ds_nz8SDx8s_ds_uymu0ww9"
+			},
+			"title": "NPA - device info"
+		},
+		"viz_fU8mG4IO": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "### Basic information",
+				"backgroundColor": "#708794",
+				"fontSize": "extraLarge"
+			}
+		},
+		"viz_YjF2tjzn": {
+			"type": "splunk.table",
+			"options": {
+				"dataOverlayMode": "none",
+				"drilldown": "none",
+				"showRowNumbers": false,
+				"showInternalFields": false,
+				"count": 1000,
+				"columnFormat": {
+					"client_version": {
+						"width": 60
+					},
+					"common_name": {
+						"width": 74
+					},
+					"LogTime": {
+						"width": 84
+					},
+					"device_id_version": {
+						"width": 85
+					}
+				}
+			},
+			"dataSources": {
+				"primary": "ds_mQwCCCTp_ds_89suN3V0_ds_nz8SDx8s_ds_uymu0ww9"
+			},
+			"title": "NPA - device info2"
+		}
+	},
+	"inputs": {
+		"input_isTAf6kn": {
+			"options": {
+				"items": [],
+				"token": "field1"
+			},
+			"title": "Select Client log",
+			"type": "input.dropdown",
+			"dataSources": {
+				"primary": "ds_6a2VT9JD"
+			}
+		},
+		"input_JBiR4uV0": {
+			"options": {
+				"defaultValue": "0,",
+				"token": "tr_n9GlxAEz"
+			},
+			"title": "Time Range Input Title",
+			"type": "input.timerange"
+		}
+	},
+	"layout": {
+		"type": "absolute",
+		"options": {
+			"width": 1440,
+			"height": 10000
+		},
+		"structure": [
+			{
+				"item": "viz_fU8mG4IO",
+				"type": "block",
+				"position": {
+					"x": 10,
+					"y": 10,
+					"w": 1420,
+					"h": 1140
+				}
+			},
+			{
+				"item": "viz_9QlENcr9",
+				"type": "block",
+				"position": {
+					"x": 10,
+					"y": 2340,
+					"w": 1410,
+					"h": 1710
+				}
+			},
+			{
+				"item": "viz_UOKGClkL",
+				"type": "block",
+				"position": {
+					"x": 10,
+					"y": 1170,
+					"w": 1420,
+					"h": 1160
+				}
+			},
+			{
+				"item": "viz_3vBhFKl4",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 3610,
+					"w": 1390,
+					"h": 390
+				}
+			},
+			{
+				"item": "viz_zI6AvR56",
+				"type": "block",
+				"position": {
+					"x": 710,
+					"y": 1220,
+					"w": 700,
+					"h": 190
+				}
+			},
+			{
+				"item": "viz_pFWd9BS1",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 1220,
+					"w": 680,
+					"h": 190
+				}
+			},
+			{
+				"item": "viz_sfVd5jAP",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 1880,
+					"w": 1390,
+					"h": 250
+				}
+			},
+			{
+				"item": "viz_E52xk4if",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 2940,
+					"w": 1390,
+					"h": 260
+				}
+			},
+			{
+				"item": "viz_BlwX4Azv",
+				"type": "block",
+				"position": {
+					"x": 310,
+					"y": 1170,
+					"w": 90,
+					"h": 30
+				}
+			},
+			{
+				"item": "viz_fZGekanA",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 1420,
+					"w": 1390,
+					"h": 450
+				}
+			},
+			{
+				"item": "viz_JiZsSFaL",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 3210,
+					"w": 1390,
+					"h": 380
+				}
+			},
+			{
+				"item": "viz_NBXJPXYn",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 2670,
+					"w": 1390,
+					"h": 260
+				}
+			},
+			{
+				"item": "viz_UZlu5Deh",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 2380,
+					"w": 1390,
+					"h": 280
+				}
+			},
+			{
+				"item": "viz_dUGYORVE",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 50,
+					"w": 1400,
+					"h": 350
+				}
+			},
+			{
+				"item": "viz_8JfnUvT2",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 410,
+					"w": 1400,
+					"h": 360
+				}
+			},
+			{
+				"item": "viz_YjF2tjzn",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 780,
+					"w": 1400,
+					"h": 360
+				}
+			}
+		],
+		"globalInputs": [
+			"input_isTAf6kn",
+			"input_JBiR4uV0"
+		]
+	},
+	"title": "NPA Client connected PoP",
+	"description": "",
+	"defaults": {
+		"dataSources": {
+			"ds.search": {
+				"options": {
+					"queryParameters": {
+						"latest": "$global_time.latest$",
+						"earliest": "$global_time.earliest$"
+					}
+				}
+			}
+		}
+	}
+}
+    ]]></definition>
+    <meta type="hiddenElements"><![CDATA[
+{
+	"hideEdit": false,
+	"hideOpenInSearch": false,
+	"hideExport": false
+}
+    ]]></meta>
+</dashboard>

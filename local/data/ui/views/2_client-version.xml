@@ -1,6 +1,6 @@
 
 <dashboard version="2" theme="dark">
-    <label>Client version information</label>
+    <label>Client version</label>
     <description></description>
     <definition><![CDATA[
 {
@@ -43,8 +43,8 @@
 			"options": {
 				"query": "index=netskope_client1 sourcetype=nsdebuglog\n| table host\n| dedup host\n| sort -host",
 				"queryParameters": {
-					"earliest": "-2mon",
-					"latest": "now"
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
 				}
 			},
 			"name": "Select Client log"
@@ -201,9 +201,7 @@
 				"primary": "ds_lmo8JfHa"
 			},
 			"containerOptions": {
-				"visibility": {
-					"hideWhenNoData": true
-				}
+				"visibility": {}
 			},
 			"title": "STAUpdate.txt - Win"
 		},
@@ -241,9 +239,7 @@
 				"primary": "ds_QVwAdiuD_ds_lmo8JfHa"
 			},
 			"containerOptions": {
-				"visibility": {
-					"hideWhenNoData": true
-				}
+				"visibility": {}
 			},
 			"title": "install.log - Mac"
 		},
@@ -267,13 +263,24 @@
 	"inputs": {
 		"input_isTAf6kn": {
 			"options": {
-				"items": [],
+				"items": ">frame(label, value) | prepend(formattedStatics) | objects()",
 				"token": "field1"
 			},
 			"title": "Select Client log",
 			"type": "input.dropdown",
 			"dataSources": {
 				"primary": "ds_6a2VT9JD"
+			},
+			"context": {
+				"formattedConfig": {
+					"number": {
+						"prefix": ""
+					}
+				},
+				"formattedStatics": ">statics | formatByType(formattedConfig)",
+				"statics": [],
+				"label": ">primary | seriesByName(\"host\") | renameSeries(\"label\") | formatByType(formattedConfig)",
+				"value": ">primary | seriesByName(\"host\") | renameSeries(\"value\") | formatByType(formattedConfig)"
 			}
 		},
 		"input_JBiR4uV0": {
@@ -299,7 +306,7 @@
 					"x": 10,
 					"y": 870,
 					"w": 1410,
-					"h": 2720
+					"h": 2040
 				}
 			},
 			{
@@ -308,7 +315,7 @@
 				"position": {
 					"x": 20,
 					"y": 910,
-					"w": 640,
+					"w": 690,
 					"h": 140
 				}
 			},
@@ -316,9 +323,9 @@
 				"item": "viz_7cnN1jRc",
 				"type": "block",
 				"position": {
-					"x": 680,
+					"x": 720,
 					"y": 910,
-					"w": 450,
+					"w": 690,
 					"h": 140
 				}
 			},
@@ -348,7 +355,7 @@
 				"position": {
 					"x": 20,
 					"y": 2290,
-					"w": 1380,
+					"w": 1390,
 					"h": 600
 				}
 			},
@@ -368,7 +375,7 @@
 				"position": {
 					"x": 20,
 					"y": 250,
-					"w": 1370,
+					"w": 1390,
 					"h": 580
 				}
 			},
@@ -388,7 +395,7 @@
 			"input_JBiR4uV0"
 		]
 	},
-	"title": "Client version information",
+	"title": "Client version",
 	"description": "",
 	"defaults": {
 		"dataSources": {

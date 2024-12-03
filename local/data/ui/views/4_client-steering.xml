@@ -1,6 +1,6 @@
 
 <dashboard version="2" theme="dark">
-    <label>Client Steering information</label>
+    <label>Client Steering</label>
     <description></description>
     <definition><![CDATA[
 {
@@ -87,8 +87,8 @@
 			"options": {
 				"query": "index=netskope_client1 sourcetype=nsdebuglog\n| table host\n| dedup host\n| sort -host",
 				"queryParameters": {
-					"earliest": "-2mon",
-					"latest": "now"
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
 				}
 			},
 			"name": "Select Client log"
@@ -914,7 +914,7 @@
 			"input_JBiR4uV0"
 		]
 	},
-	"title": "Client Steering information",
+	"title": "Client Steering",
 	"description": "",
 	"defaults": {
 		"dataSources": {
