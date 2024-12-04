@@ -336,9 +336,7 @@
 				"primary": "ds_3BW1BQjy"
 			},
 			"containerOptions": {
-				"visibility": {
-					"hideWhenNoData": true
-				}
+				"visibility": {}
 			},
 			"title": "Hardware information"
 		},
@@ -364,9 +362,7 @@
 				"primary": "ds_7CpRsbSg"
 			},
 			"containerOptions": {
-				"visibility": {
-					"hideWhenNoData": true
-				}
+				"visibility": {}
 			},
 			"showProgressBar": false,
 			"showLastUpdated": false
@@ -387,17 +383,13 @@
 		},
 		"viz_HJS7gsYL": {
 			"type": "splunk.singlevalue",
-			"options": {},
 			"dataSources": {
 				"primary": "ds_xh0scyrN_ds_3BW1BQjy"
 			},
 			"containerOptions": {
-				"visibility": {
-					"hideWhenNoData": true
-				}
+				"visibility": {}
 			},
 			"title": "Check if peruserconfig is enabled",
-			"context": {},
 			"showProgressBar": false,
 			"showLastUpdated": false
 		},
@@ -407,9 +399,7 @@
 				"primary": "ds_2BX7JNGj_ds_xh0scyrN_ds_3BW1BQjy"
 			},
 			"containerOptions": {
-				"visibility": {
-					"hideWhenNoData": true
-				}
+				"visibility": {}
 			},
 			"title": "Peruserconfig setting",
 			"showProgressBar": false,
@@ -421,9 +411,7 @@
 				"primary": "ds_9djM1het_ds_xh0scyrN_ds_3BW1BQjy"
 			},
 			"containerOptions": {
-				"visibility": {
-					"hideWhenNoData": true
-				}
+				"visibility": {}
 			},
 			"title": "Check if SelfProtection is enabled",
 			"showProgressBar": false,
@@ -465,9 +453,7 @@
 				"primary": "ds_vRWQqpBq_ds_7CpRsbSg"
 			},
 			"containerOptions": {
-				"visibility": {
-					"hideWhenNoData": true
-				}
+				"visibility": {}
 			},
 			"showProgressBar": false,
 			"showLastUpdated": false,
@@ -604,9 +590,7 @@
 				"primary": "ds_KlkPVFOL_ds_9djM1het_ds_xh0scyrN_ds_3BW1BQjy"
 			},
 			"containerOptions": {
-				"visibility": {
-					"hideWhenNoData": true
-				}
+				"visibility": {}
 			},
 			"title": "Secure enrollment - nsconfig",
 			"showProgressBar": false,
@@ -661,7 +645,7 @@
 				"position": {
 					"x": 10,
 					"y": 1470,
-					"w": 1410,
+					"w": 1420,
 					"h": 310
 				}
 			},
@@ -671,7 +655,7 @@
 				"position": {
 					"x": 10,
 					"y": 10,
-					"w": 1410,
+					"w": 1420,
 					"h": 630
 				}
 			},
@@ -681,7 +665,7 @@
 				"position": {
 					"x": 10,
 					"y": 660,
-					"w": 1410,
+					"w": 1420,
 					"h": 510
 				}
 			},
@@ -691,7 +675,7 @@
 				"position": {
 					"x": 20,
 					"y": 60,
-					"w": 1380,
+					"w": 1400,
 					"h": 180
 				}
 			},
@@ -701,7 +685,7 @@
 				"position": {
 					"x": 20,
 					"y": 710,
-					"w": 1380,
+					"w": 1400,
 					"h": 430
 				}
 			},
@@ -751,7 +735,7 @@
 				"position": {
 					"x": 20,
 					"y": 1860,
-					"w": 660,
+					"w": 670,
 					"h": 130
 				}
 			},
@@ -801,7 +785,7 @@
 				"position": {
 					"x": 20,
 					"y": 250,
-					"w": 1380,
+					"w": 1400,
 					"h": 370
 				}
 			},
@@ -811,7 +795,7 @@
 				"position": {
 					"x": 720,
 					"y": 1190,
-					"w": 700,
+					"w": 710,
 					"h": 260
 				}
 			},
@@ -821,7 +805,7 @@
 				"position": {
 					"x": 740,
 					"y": 1240,
-					"w": 670,
+					"w": 680,
 					"h": 190
 				}
 			},
@@ -851,7 +835,7 @@
 				"position": {
 					"x": 20,
 					"y": 2020,
-					"w": 660,
+					"w": 670,
 					"h": 260
 				}
 			},
@@ -861,7 +845,7 @@
 				"position": {
 					"x": 20,
 					"y": 2310,
-					"w": 660,
+					"w": 670,
 					"h": 300
 				}
 			},
@@ -901,8 +885,8 @@
 				"position": {
 					"x": 20,
 					"y": 1520,
-					"w": 360,
-					"h": 190
+					"w": 370,
+					"h": 200
 				}
 			},
 			{
@@ -912,7 +896,7 @@
 					"x": 400,
 					"y": 1520,
 					"w": 500,
-					"h": 190
+					"h": 200
 				}
 			}
 		],

@@ -8,7 +8,7 @@
 		"ds_nwd5jErf": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=npadebuglog sourcetype=npadebuglog \"Getting policy rule\" OR \"No matching\"\n| rex field=_raw \"(?<LogTime>\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3})\\s.*host\\s(?<dsthost>.*)\\sip\\s(?<hex>.*),\\sproto\\s(?<proto>.*)\\sport\\s(?<port>.*)\"\n| rex field=hex \"(?<d1>[0-9A-Fa-f]{1,2})(?<d2>[0-9A-Fa-f]{2})(?<d3>[0-9A-Fa-f]{2})(?<d4>[0-9A-Fa-f]{2})\"\n| rex field=_raw \"(?<msg>No\\smatching.*)\"\n| eval ip_from_Hex=if(isnotnull(hex), tostring(tonumber(d4,16))+\".\"+tostring(tonumber(d3,16))+\".\"+tostring(tonumber(d2,16))+\".\"+tostring(tonumber(d1,16)), null)\n| eval dsthost=if(isnull('dsthost'), msg, dsthost)\n| table LogTime, dsthost, hex, ip_from_Hex, proto, port\n| sort LogTime",
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=npadebuglog  \"Getting policy rule\" OR \"No matching\"\n| rex field=_raw \"(?<LogTime>\\d{4}[-|\\/]\\d{2}[-|\\/]\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*host\\s(?<dsthost>.*)\\sip\\s(?<hex>.*),\\sproto\\s(?<proto>.*)\\sport\\s(?<port>.*)\"\n| rex field=hex \"(?<d1>[0-9A-Fa-f]{1,2})(?<d2>[0-9A-Fa-f]{2})(?<d3>[0-9A-Fa-f]{2})(?<d4>[0-9A-Fa-f]{2})\"\n| rex field=_raw \"(?<LogTime>\\d{4}[-|\\/]\\d{2}[-|\\/]\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*(?<msg>No\\smatching.*)\"\n| eval ip_from_Hex=if(isnotnull(hex), tostring(tonumber(d4,16))+\".\"+tostring(tonumber(d3,16))+\".\"+tostring(tonumber(d2,16))+\".\"+tostring(tonumber(d1,16)), null)\n| eval dsthost=if(isnull('dsthost'), msg, dsthost)\n| table LogTime, dsthost, hex, ip_from_Hex, proto, port\n| sort LogTime",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"
@@ -233,13 +233,13 @@
 				"count": 100,
 				"columnFormat": {
 					"ip_from_Hex": {
-						"width": 129
+						"width": 96
 					},
 					"dsthost": {
-						"width": 255
+						"width": 96
 					},
 					"LogTime": {
-						"width": 231
+						"width": 162
 					}
 				}
 			},

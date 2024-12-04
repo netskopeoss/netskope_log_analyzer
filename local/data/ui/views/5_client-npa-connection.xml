@@ -63,7 +63,7 @@
 		"ds_9ze5Vfw0": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\"  sourcetype=nsdebuglog \"post client rtt\" \n| rex field=_raw \"\\[(?<Client>.*)\\]:\\spost\\sclient\\srtt\\spop\\:(?<PoP>.*)\\sip\\:(?<GatewayIP>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\srtt:(?<RTT>\\d+)\"\n| eval Dst=Client.\"_\".PoP.\"_\".GatewayIP\n| stats avg(RTT) as AvgRTT by Dst\n| eval AvgRTT=round(AvgRTT, 2)\n| sort AvgRTT, Dst",
+				"query": "index=netskope_client1 host=\"$field1$\" \"post client rtt\" \n| rex field=_raw \"\\[(?<Client>.*)\\]:\\spost\\sclient\\srtt\\spop\\:(?<PoP>.*)\\sip\\:(?<GatewayIP>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\srtt:(?<RTT>\\d+)\"\n| where Client=\"NPA\"\n| eval Dst=Client.\"_\".PoP.\"_\".GatewayIP\n| stats avg(RTT) as AvgRTT by Dst\n| eval AvgRTT=round(AvgRTT, 2)\n| sort AvgRTT, Dst",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"
@@ -184,7 +184,7 @@
 		"ds_nz8SDx8s_ds_uymu0ww9": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"nsAppUI\" \"systemtray Service status\" OR \"===\"\n| rex field=_raw \"(?<LogTime>\\d{4}[-|\\/]\\d{2}[-|\\/]\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*Service\\sstatus\\s:\\s\\[(?<field1>[^\\]]+)\\](?: \\[(?<field2>[^\\]]+)\\])?(?: \\[(?<field3>[^\\]]+)\\])?\"\n| table LogTime, field1 field2 field3\n| sort LogTime",
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"nsAppUI\" \"systemtray Service status\" OR \"===\"\n| rex field=_raw \"(?<LogTime>\\d{4}[-|\\/]\\d{2}[-|\\/]\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*\\[Internet\\sSecurity=(?<InternetSecurity>[^\\]]*)\\](?:\\s\\[Private\\sAccess=(?<PrivateAccess>[^\\]]*)\\])?(?:\\s\\[Endpoint\\sDLP=(?<EndpointDLP>[^\\]]*)\\])?\"\n| eval _time=strptime(LogTime, \"%Y/%m/%d %H:%M:%S.%3N\")\n| table LogTime, InternetSecurity, PrivateAccess, EndpointDLP\n| sort LogTime",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"
@@ -217,7 +217,7 @@
 		"ds_89suN3V0_ds_nz8SDx8s_ds_uymu0ww9": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"npadebuglog\" \"Device Info:\"\n| rex field=_raw \"(?<LogTime>\\d{4}[-|\\/]\\d{2}[-|\\/]\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*Device\\sInfo:\\s(?<DeviceInfo>.*)\"\n| spath input=DeviceInfo\n| eval device.assessment.last_logon_time=strftime('device.assessment.last_logon_time', \"%Y/%m/%d %H:%M:%S\")\n| rename device.assessment.* as *\n| table LogTime, user_email, last_logon_time,  last_logon_time, gw_resolution, machine_name, managed, npa_srpv2, on_prem_status, policyVersion, tunnel_type\n| sort LogTime",
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"npadebuglog\" \"Device Info:\"\n| rex field=_raw \"(?<LogTime>\\d{4}[-|\\/]\\d{2}[-|\\/]\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*Device\\sInfo:\\s(?<DeviceInfo>.*)\"\n| spath input=DeviceInfo\n| eval device.assessment.last_logon_time=strftime('device.assessment.last_logon_time', \"%Y/%m/%d %H:%M:%S\")\n| rename device.assessment.* as *\n| table LogTime, user_email, last_logon_time,  last_logon_time, device.client_version, gw_resolution, machine_name, managed, npa_srpv2, on_prem_status, policyVersion, tunnel_type\n| sort LogTime",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"
@@ -246,6 +246,72 @@
 				}
 			},
 			"name": "GSLB RTT copy 1"
+		},
+		"ds_8xWNZJiy_ds_nz8SDx8s_ds_uymu0ww9": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"nsAppUI\" \"systemtray Service status\" OR \"===\"\n| rex field=_raw \"(?<LogTime>\\d{4}[-|\\/]\\d{2}[-|\\/]\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*Service\\sstatus\\s:\\s\\[(?<field1>[^\\]]+)\\](?: \\[(?<field2>[^\\]]+)\\])?(?: \\[(?<field3>[^\\]]+)\\])?\"\n| table LogTime, field1 field2 field3\n| sort LogTime",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "System tray status copy 1"
+		},
+		"ds_KP1V9siQ": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_json1 sourcetype=\"nsconfig\" source=\"*nsuserconfig.json\" host=\"$field1$\" \n| stats count as result_count\n| eval peruseconfig = if(result_count > 0, \"true\", \"false\")\n| table peruseconfig",
+				"queryParameters": {
+					"earliest": "0",
+					"latest": ""
+				}
+			},
+			"name": "Peruser mode"
+		},
+		"ds_6wLtfs7H_ds_KP1V9siQ": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_json1 source=\"*nsconfig.json\" AND NOT source=\"*prelogon_nsconfig.json\" host=\"$field1$\"\n| table clientConfig.MDMSecureEnrollmentTokenEnabled",
+				"queryParameters": {
+					"earliest": "0",
+					"latest": ""
+				}
+			},
+			"name": "Secure Enrollment"
+		},
+		"ds_iohORCkR_ds_nz8SDx8s_ds_uymu0ww9": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\"  sourcetype=\"npadebuglog\" \"Device Info:\"\n| rex field=_raw \"(?<LogTime>\\d{4}[-|\\/]\\d{2}[-|\\/]\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*Device\\sInfo:\\s(?<DeviceInfo>.*)\"\n| spath input=DeviceInfo\n| stats values(device.assessment.user_email) as \"001. device.assessment.user_email\", \nvalues(device.client_version) as \"002. device.client_version\", \nvalues(device.common_name) as \"003. device.common_name\", \nvalues(device.device_id_version) as \"004. device.device_id_version\", \nvalues(device.hardware_identifier) as \"005. device.hardware_identifier\", \nvalues(device.magic_identifier) as \"006. device.magic_identifier\", \nvalues(device.netskope_device_id) as \"007. device.netskope_device_id\", \nvalues(device.new_identifier) as \"008. device.new_identifier\", \nvalues(device.vendor_identifier) as \"009. device.vendor_identifier\"\n| table 00*\n| transpose 0 column_name=\"header\":",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "NPA basic infomation"
+		},
+		"ds_nnzBGClt_ds_USxTAkrP_ds_9ze5Vfw0": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"nsAppUI\" \"systemtray Service status\" OR \"===\"\n| rex field=_raw \"(?<LogTime>\\d{4}[-|\\/]\\d{2}[-|\\/]\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*\\[Internet\\sSecurity=(?<InternetSecurity>[^\\]]*)\\](?:\\s\\[Private\\sAccess=(?<PrivateAccess>[^\\]]*)\\])?(?:\\s\\[Endpoint\\sDLP=(?<EndpointDLP>[^\\]]*)\\])?\"\n| eval _time=strptime(LogTime, \"%Y/%m/%d %H:%M:%S.%3N\")\n| timechart count by PrivateAccess",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "NP system tray"
+		},
+		"ds_8jat6ydz_ds_iohORCkR_ds_nz8SDx8s_ds_uymu0ww9": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" \"user input post payload is\" OR \"Change State from\" OR \"systemtray Service status\"\n| rex field=_raw \"(?<LogTime>\\d{4}\\/\\d{2}\\/\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*TenantName=(?<Tenant>.*)&UTCEpoch=(?<UTCEpoch>.*)\"\n| rex field=_raw \"(?<LogTime>\\d{4}\\/\\d{2}\\/\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*State\\sfrom:\\s(?<FromTo>.*)\"\n| rex field=_raw \"(?<LogTime>\\d{4}\\/\\d{2}\\/\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*Service\\sstatus\\s:\\s(?<ServiceStatus>.*)\"\n| eval MSG=if(isnotnull(FromTo), 'FromTo', 'MSG')\n| eval MSG=if(isnotnull(UTCEpoch), Tenant.\" \".UTCEpoch.\" (\".strftime(UTCEpoch, \"%Y-%m-%d %H:%M:%S\").\")\", 'MSG')\n| eval MSG=if(isnotnull(ServiceStatus), 'ServiceStatus', 'MSG')\n| table LogTime, MSG\n| sort LogTime",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "Enrollment"
 		}
 	},
 	"visualizations": {
@@ -254,7 +320,7 @@
 			"dataSources": {
 				"primary": "ds_hLXoE9n0"
 			},
-			"title": "Timechart",
+			"title": "Connected PoP Timechart",
 			"containerOptions": {},
 			"showProgressBar": false,
 			"showLastUpdated": false,
@@ -403,7 +469,10 @@
 				"count": 1000,
 				"columnFormat": {
 					"LogTime": {
-						"width": 60
+						"width": 104
+					},
+					"InternetSecurity": {
+						"width": 120
 					}
 				}
 			},
@@ -419,25 +488,31 @@
 				"drilldown": "none",
 				"showRowNumbers": false,
 				"showInternalFields": false,
-				"count": 1000,
+				"count": 500,
 				"columnFormat": {
 					"client_version": {
 						"width": 87
 					},
 					"device.client_version": {
-						"width": 91
+						"width": 100
 					},
 					"npa_srpv2": {
 						"width": 60
 					},
 					"user_email": {
-						"width": 173
+						"width": 275
 					},
 					"LogTime": {
-						"width": 147
+						"width": 207
 					},
 					"last_logon_time": {
-						"width": 127
+						"width": 161
+					},
+					"machine_name": {
+						"width": 154
+					},
+					"on_prem_status": {
+						"width": 60
 					}
 				}
 			},
@@ -454,34 +529,6 @@
 				"fontSize": "extraLarge"
 			}
 		},
-		"viz_YjF2tjzn": {
-			"type": "splunk.table",
-			"options": {
-				"dataOverlayMode": "none",
-				"drilldown": "none",
-				"showRowNumbers": false,
-				"showInternalFields": false,
-				"count": 1000,
-				"columnFormat": {
-					"client_version": {
-						"width": 60
-					},
-					"common_name": {
-						"width": 74
-					},
-					"LogTime": {
-						"width": 84
-					},
-					"device_id_version": {
-						"width": 85
-					}
-				}
-			},
-			"dataSources": {
-				"primary": "ds_mQwCCCTp_ds_89suN3V0_ds_nz8SDx8s_ds_uymu0ww9"
-			},
-			"title": "NPA - device info2"
-		},
 		"viz_LC4eSjn3": {
 			"type": "splunk.table",
 			"dataSources": {
@@ -492,6 +539,70 @@
 			"showProgressBar": false,
 			"showLastUpdated": false,
 			"options": {
+				"count": 100
+			},
+			"description": "Use this value to check backend log"
+		},
+		"viz_xbvfawL5": {
+			"type": "splunk.singlevalue",
+			"dataSources": {
+				"primary": "ds_KP1V9siQ"
+			},
+			"title": "Peruser mode",
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false
+		},
+		"viz_tO0EQAAr": {
+			"type": "splunk.singlevalue",
+			"dataSources": {
+				"primary": "ds_6wLtfs7H_ds_KP1V9siQ"
+			},
+			"title": "Secure Enrollment",
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false
+		},
+		"viz_ycF3TlyM": {
+			"type": "splunk.table",
+			"dataSources": {
+				"primary": "ds_iohORCkR_ds_nz8SDx8s_ds_uymu0ww9"
+			},
+			"title": "Basic infomation",
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false
+		},
+		"viz_4evIJu8K": {
+			"type": "splunk.column",
+			"dataSources": {
+				"primary": "ds_nnzBGClt_ds_USxTAkrP_ds_9ze5Vfw0"
+			},
+			"title": "System tray status",
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false,
+			"options": {
+				"legendDisplay": "bottom",
+				"yAxisScale": "log",
+				"stackMode": "stacked"
+			}
+		},
+		"viz_PCYM86QM": {
+			"type": "splunk.table",
+			"dataSources": {
+				"primary": "ds_8jat6ydz_ds_iohORCkR_ds_nz8SDx8s_ds_uymu0ww9"
+			},
+			"title": "Enrollment history",
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false,
+			"options": {
+				"columnFormat": {
+					"LogTime": {
+						"width": 60
+					}
+				},
 				"count": 100
 			}
 		}
@@ -521,7 +632,8 @@
 		"type": "absolute",
 		"options": {
 			"width": 1440,
-			"height": 10000
+			"height": 10000,
+			"display": "actual-size"
 		},
 		"structure": [
 			{
@@ -531,7 +643,7 @@
 					"x": 10,
 					"y": 10,
 					"w": 1420,
-					"h": 1140
+					"h": 2480
 				}
 			},
 			{
@@ -539,8 +651,8 @@
 				"type": "block",
 				"position": {
 					"x": 10,
-					"y": 2340,
-					"w": 1410,
+					"y": 3900,
+					"w": 1420,
 					"h": 1710
 				}
 			},
@@ -549,9 +661,9 @@
 				"type": "block",
 				"position": {
 					"x": 10,
-					"y": 1170,
+					"y": 2500,
 					"w": 1420,
-					"h": 1160
+					"h": 1390
 				}
 			},
 			{
@@ -559,7 +671,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 3610,
+					"y": 5170,
 					"w": 1390,
 					"h": 390
 				}
@@ -568,10 +680,10 @@
 				"item": "viz_zI6AvR56",
 				"type": "block",
 				"position": {
-					"x": 710,
-					"y": 1220,
-					"w": 700,
-					"h": 190
+					"x": 20,
+					"y": 3430,
+					"w": 1400,
+					"h": 220
 				}
 			},
 			{
@@ -579,7 +691,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 1220,
+					"y": 2540,
 					"w": 680,
 					"h": 190
 				}
@@ -589,9 +701,9 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 1880,
-					"w": 1390,
-					"h": 250
+					"y": 3660,
+					"w": 1400,
+					"h": 220
 				}
 			},
 			{
@@ -599,8 +711,8 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 2940,
-					"w": 1390,
+					"y": 4500,
+					"w": 1400,
 					"h": 260
 				}
 			},
@@ -608,8 +720,8 @@
 				"item": "viz_BlwX4Azv",
 				"type": "block",
 				"position": {
-					"x": 310,
-					"y": 1170,
+					"x": 330,
+					"y": 2510,
 					"w": 90,
 					"h": 30
 				}
@@ -619,8 +731,8 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 1420,
-					"w": 1390,
+					"y": 2740,
+					"w": 1400,
 					"h": 450
 				}
 			},
@@ -629,8 +741,8 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 3210,
-					"w": 1390,
+					"y": 4770,
+					"w": 1400,
 					"h": 380
 				}
 			},
@@ -639,8 +751,8 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 2670,
-					"w": 1390,
+					"y": 4230,
+					"w": 1400,
 					"h": 260
 				}
 			},
@@ -649,8 +761,8 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 2380,
-					"w": 1390,
+					"y": 3940,
+					"w": 1400,
 					"h": 280
 				}
 			},
@@ -659,7 +771,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 50,
+					"y": 1620,
 					"w": 1400,
 					"h": 350
 				}
@@ -669,19 +781,9 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 410,
+					"y": 1100,
 					"w": 1400,
-					"h": 360
-				}
-			},
-			{
-				"item": "viz_YjF2tjzn",
-				"type": "block",
-				"position": {
-					"x": 20,
-					"y": 780,
-					"w": 1400,
-					"h": 360
+					"h": 510
 				}
 			},
 			{
@@ -689,9 +791,59 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 4020,
-					"w": 1390,
+					"y": 1990,
+					"w": 1400,
 					"h": 480
+				}
+			},
+			{
+				"item": "viz_xbvfawL5",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 50,
+					"w": 350,
+					"h": 150
+				}
+			},
+			{
+				"item": "viz_tO0EQAAr",
+				"type": "block",
+				"position": {
+					"x": 390,
+					"y": 50,
+					"w": 350,
+					"h": 150
+				}
+			},
+			{
+				"item": "viz_ycF3TlyM",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 210,
+					"w": 1400,
+					"h": 380
+				}
+			},
+			{
+				"item": "viz_4evIJu8K",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 3200,
+					"w": 1400,
+					"h": 220
+				}
+			},
+			{
+				"item": "viz_PCYM86QM",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 610,
+					"w": 1400,
+					"h": 470
 				}
 			}
 		],
