@@ -571,7 +571,9 @@
 			"title": "Basic infomation",
 			"containerOptions": {},
 			"showProgressBar": false,
-			"showLastUpdated": false
+			"showLastUpdated": false,
+			"options": {},
+			"context": {}
 		},
 		"viz_4evIJu8K": {
 			"type": "splunk.column",
@@ -603,7 +605,7 @@
 						"width": 60
 					}
 				},
-				"count": 100
+				"count": 500
 			}
 		}
 	},
@@ -771,7 +773,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 1620,
+					"y": 600,
 					"w": 1400,
 					"h": 350
 				}
@@ -781,9 +783,9 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 1100,
+					"y": 1440,
 					"w": 1400,
-					"h": 510
+					"h": 550
 				}
 			},
 			{
@@ -791,7 +793,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 1990,
+					"y": 2000,
 					"w": 1400,
 					"h": 480
 				}
@@ -841,7 +843,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 610,
+					"y": 960,
 					"w": 1400,
 					"h": 470
 				}

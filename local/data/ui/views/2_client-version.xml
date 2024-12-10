@@ -8,7 +8,7 @@
 		"ds_z0jEHn3e": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_json1 sourcetype=nsconfig host=\"$field1$\" source=\"*nsconfig.json\" AND NOT source=\"*prelogon_nsconfig.json\"\n| rename clientConfig.configurationName as \"001. Client Configuration name\"\n| eval \"002. Last config sync time\"=strftime('cache.configUpdateTimestamp', \"%Y/%m/%d %H:%M:%S\")\n| eval \"004. The time when the last upgrade check was performed\"=strftime('cache.lastClientUpdatedTimestamp', \"%Y/%m/%d %H:%M:%S\")\n| rename \nclientConfig.clientUpdate.allowAutoUpdate as \"003. Enable autoupdate?\"\nclientConfig.clientUpdate.updateIntervalInMin as \"005. Upgrade check interval\",\nclientConfig.clientUpdate.allowAutoGoldenUpdate as \"006. Auto update to Goalden release?\",\nclientConfig.clientUpdate.goldenReleaseVersion as \"007. Specifc golden release?\",\nclientConfig.clientUpdate.goldenDotReleaseUpdate as \"008. Opt-in dot upgrade of the specific golden release\",\nclientConfig.clientUpdate.showUpdateNotification as \"009. Show upgrade notification to end users?\",\nclientConfig.clientUpdate* as \"010. clientConfig.clientUpdate*\",\n| table 0*\n| transpose 0 column_name=\"header\":\n| fields - \"column\"",
+				"query": "index=netskope_json1 sourcetype=nsconfig host=\"$field1$\" source=\"*nsconfig.json\" AND NOT source=\"*prelogon_nsconfig.json\"\n| rename clientConfig.configurationName as \"001. Client Configuration name\"\n| eval \"002. Last config sync time\"=strftime('cache.configUpdateTimestamp', \"%Y/%m/%d %H:%M:%S\")\n| eval \"004. The time when the last upgrade check was performed\"=strftime('cache.lastClientUpdatedTimestamp', \"%Y/%m/%d %H:%M:%S\")\n| rename \nclientConfig.clientUpdate.allowAutoUpdate as \"003. Enable autoupdate?\"\nclientConfig.clientUpdate.updateIntervalInMin as \"005. Upgrade check interval\",\nclientConfig.clientUpdate.allowAutoGoldenUpdate as \"006. Auto update to Goalden release?\",\nclientConfig.clientUpdate.goldenReleaseVersion as \"007. Specifc golden release?\",\nclientConfig.clientUpdate.goldenDotReleaseUpdate as \"008. Opt-in dot upgrade of the specific golden release\",\nclientConfig.clientUpdate.showUpdateNotification as \"009. Show upgrade notification to end users?\",\nclientConfig.clientUpdate* as \"010. clientConfig.clientUpdate*\",\n| table 00*, 01*\n| transpose",
 				"queryParameters": {
 					"earliest": "0",
 					"latest": ""
@@ -279,8 +279,8 @@
 				},
 				"formattedStatics": ">statics | formatByType(formattedConfig)",
 				"statics": [],
-				"label": ">primary | seriesByName(\"host\") | renameSeries(\"label\") | formatByType(formattedConfig)",
-				"value": ">primary | seriesByName(\"host\") | renameSeries(\"value\") | formatByType(formattedConfig)"
+				"label": ">primary | seriesByName(\"hosts\") | renameSeries(\"label\") | formatByType(formattedConfig)",
+				"value": ">primary | seriesByName(\"hosts\") | renameSeries(\"value\") | formatByType(formattedConfig)"
 			}
 		},
 		"input_JBiR4uV0": {

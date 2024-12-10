@@ -400,6 +400,28 @@
 				}
 			},
 			"name": "Tunneling flow from cfw"
+		},
+		"ds_k9DPYgqN_ds_bPzLCYSQ_ds_tFQJ5Y1y_ds_nyIc4PX7_ds_hQ3DTGtU": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog  \"CProxyMgr Bypassing flow from\"\n| rex field=_raw \"\\sto\\s(?<MSG>.*)\"\n| stats values(MSG) as MSG\n| sort -count",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "CProxyMgr Bypassing flow from"
+		},
+		"ds_0fqPTVC5_ds_tFQJ5Y1y_ds_nyIc4PX7_ds_hQ3DTGtU": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog  sourcetype=nsdebuglog \"process:\"\n| rex field=_raw \".*process:\\s(?<Process>.*)(\\sto\\shost|,\\shost)\"\n| stats values(Process) as Process ",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "Internet Security Detected Process"
 		}
 	},
 	"visualizations": {
@@ -688,6 +710,43 @@
 					}
 				}
 			}
+		},
+		"viz_YVs9Ss6o": {
+			"type": "splunk.table",
+			"dataSources": {
+				"primary": "ds_k9DPYgqN_ds_bPzLCYSQ_ds_tFQJ5Y1y_ds_nyIc4PX7_ds_hQ3DTGtU"
+			},
+			"title": "CProxyMgr Bypassing flow from",
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false,
+			"options": {
+				"count": 100,
+				"columnFormat": {
+					"LogTime": {
+						"width": 60
+					},
+					"Process": {
+						"width": 60
+					},
+					"HostIP": {
+						"width": 340
+					},
+					"Dst": {
+						"width": 117
+					}
+				}
+			}
+		},
+		"viz_8gzB64Hy": {
+			"type": "splunk.table",
+			"dataSources": {
+				"primary": "ds_0fqPTVC5_ds_tFQJ5Y1y_ds_nyIc4PX7_ds_hQ3DTGtU"
+			},
+			"title": "All Internet Seicurity detected process (Tunnel and bypass)",
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false
 		}
 	},
 	"inputs": {
@@ -724,8 +783,8 @@
 				"position": {
 					"x": 10,
 					"y": 10,
-					"w": 1410,
-					"h": 1630
+					"w": 1420,
+					"h": 1710
 				}
 			},
 			{
@@ -733,8 +792,8 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 890,
-					"w": 1390,
+					"y": 970,
+					"w": 1400,
 					"h": 330
 				}
 			},
@@ -753,8 +812,8 @@
 				"type": "block",
 				"position": {
 					"x": 10,
-					"y": 1660,
-					"w": 1410,
+					"y": 1730,
+					"w": 1420,
 					"h": 1310
 				}
 			},
@@ -763,9 +822,9 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 630,
-					"w": 1390,
-					"h": 240
+					"y": 730,
+					"w": 1400,
+					"h": 230
 				}
 			},
 			{
@@ -773,8 +832,8 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 1700,
-					"w": 1390,
+					"y": 1770,
+					"w": 1400,
 					"h": 410
 				}
 			},
@@ -784,8 +843,8 @@
 				"position": {
 					"x": 20,
 					"y": 60,
-					"w": 1390,
-					"h": 550
+					"w": 1400,
+					"h": 660
 				}
 			},
 			{
@@ -793,8 +852,8 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 2570,
-					"w": 1390,
+					"y": 2640,
+					"w": 1400,
 					"h": 380
 				}
 			},
@@ -803,8 +862,8 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 2130,
-					"w": 1390,
+					"y": 2200,
+					"w": 1400,
 					"h": 420
 				}
 			},
@@ -813,19 +872,19 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 1240,
-					"w": 1390,
-					"h": 370
+					"y": 1310,
+					"w": 1400,
+					"h": 400
 				}
 			},
 			{
 				"item": "viz_5IOi3LhA",
 				"type": "block",
 				"position": {
-					"x": 0,
-					"y": 2990,
+					"x": 10,
+					"y": 3050,
 					"w": 1420,
-					"h": 1250
+					"h": 1120
 				}
 			},
 			{
@@ -833,8 +892,8 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 3030,
-					"w": 1390,
+					"y": 3360,
+					"w": 1400,
 					"h": 390
 				}
 			},
@@ -842,18 +901,18 @@
 				"item": "viz_l671BH1P",
 				"type": "block",
 				"position": {
-					"x": 0,
-					"y": 4260,
+					"x": 10,
+					"y": 4180,
 					"w": 1420,
-					"h": 790
+					"h": 1740
 				}
 			},
 			{
 				"item": "viz_yEPX18Iq",
 				"type": "block",
 				"position": {
-					"x": 10,
-					"y": 4660,
+					"x": 20,
+					"y": 4590,
 					"w": 690,
 					"h": 380
 				}
@@ -862,9 +921,9 @@
 				"item": "viz_0ffUgM5f",
 				"type": "block",
 				"position": {
-					"x": 710,
-					"y": 4580,
-					"w": 680,
+					"x": 720,
+					"y": 4590,
+					"w": 700,
 					"h": 380
 				}
 			},
@@ -872,9 +931,9 @@
 				"item": "viz_ycEBatHj",
 				"type": "block",
 				"position": {
-					"x": 710,
-					"y": 4290,
-					"w": 680,
+					"x": 720,
+					"y": 4220,
+					"w": 700,
 					"h": 350
 				}
 			},
@@ -882,8 +941,8 @@
 				"item": "viz_TsyE54jL",
 				"type": "block",
 				"position": {
-					"x": 10,
-					"y": 4290,
+					"x": 20,
+					"y": 4220,
 					"w": 690,
 					"h": 350
 				}
@@ -893,8 +952,8 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 3840,
-					"w": 1390,
+					"y": 4980,
+					"w": 1400,
 					"h": 380
 				}
 			},
@@ -903,9 +962,29 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 3430,
-					"w": 1390,
+					"y": 3760,
+					"w": 1400,
 					"h": 400
+				}
+			},
+			{
+				"item": "viz_YVs9Ss6o",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 5380,
+					"w": 1400,
+					"h": 380
+				}
+			},
+			{
+				"item": "viz_8gzB64Hy",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 3090,
+					"w": 1400,
+					"h": 260
 				}
 			}
 		],

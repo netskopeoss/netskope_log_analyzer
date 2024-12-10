@@ -513,35 +513,15 @@
 		},
 		"viz_2fawUWg6": {
 			"type": "splunk.table",
-			"options": {
-				"count": 100,
-				"dataOverlayMode": "none",
-				"drilldown": "none",
-				"showRowNumbers": false,
-				"showInternalFields": false,
-				"columnFormat": {
-					"Tenant": {
-						"width": 60
-					},
-					"UTCEpoch": {
-						"width": 60
-					},
-					"UTCtime": {
-						"width": 60
-					},
-					"From": {
-						"width": 123
-					},
-					"LogTime": {
-						"width": 60
-					}
-				},
-				"fontSize": "extraSmall"
-			},
+			"options": {},
 			"dataSources": {
 				"primary": "ds_Zc584eYm"
 			},
-			"title": "Enroll status"
+			"title": "Enroll status",
+			"context": {},
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false
 		},
 		"viz_rhzcrSTR": {
 			"type": "splunk.table",
