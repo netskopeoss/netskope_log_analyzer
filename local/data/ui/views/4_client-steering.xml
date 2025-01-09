@@ -415,13 +415,24 @@
 		"ds_0fqPTVC5_ds_tFQJ5Y1y_ds_nyIc4PX7_ds_hQ3DTGtU": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog  sourcetype=nsdebuglog \"process:\"\n| rex field=_raw \".*process:\\s(?<Process>.*)(\\sto\\shost|,\\shost)\"\n| stats values(Process) as Process ",
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog  sourcetype=nsdebuglog \"process:\"\n| rex field=_raw \".*process:\\s*(?<Process>[^\\s,]+)\"\n| stats values(Process) as Process ",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"
 				}
 			},
 			"name": "Internet Security Detected Process"
+		},
+		"ds_0JMlGVfQ_ds_ttnOtVXy_ds_lMaikGeN": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_json1 host=\"$field1$\" sourcetype=nsconfig source=\"*nsbypass.json\"\n| table *.appName",
+				"queryParameters": {
+					"earliest": "0",
+					"latest": "now"
+				}
+			},
+			"name": "nsbypass - process"
 		}
 	},
 	"visualizations": {
@@ -486,7 +497,7 @@
 			"showProgressBar": false,
 			"showLastUpdated": false,
 			"options": {
-				"count": 50
+				"count": 200
 			}
 		},
 		"viz_sfVd5jAP": {
@@ -747,6 +758,20 @@
 			"containerOptions": {},
 			"showProgressBar": false,
 			"showLastUpdated": false
+		},
+		"viz_qDf3tilf": {
+			"type": "splunk.table",
+			"options": {
+				"count": 100,
+				"dataOverlayMode": "none",
+				"drilldown": "none",
+				"showRowNumbers": false,
+				"showInternalFields": false
+			},
+			"dataSources": {
+				"primary": "ds_0JMlGVfQ_ds_ttnOtVXy_ds_lMaikGeN"
+			},
+			"title": "nsbypass.json"
 		}
 	},
 	"inputs": {
@@ -774,7 +799,7 @@
 		"type": "absolute",
 		"options": {
 			"width": 1440,
-			"height": 6000
+			"height": 9000
 		},
 		"structure": [
 			{
@@ -904,7 +929,7 @@
 					"x": 10,
 					"y": 4180,
 					"w": 1420,
-					"h": 1740
+					"h": 2100
 				}
 			},
 			{
@@ -985,6 +1010,16 @@
 					"y": 3090,
 					"w": 1400,
 					"h": 260
+				}
+			},
+			{
+				"item": "viz_qDf3tilf",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 5780,
+					"w": 1390,
+					"h": 470
 				}
 			}
 		],

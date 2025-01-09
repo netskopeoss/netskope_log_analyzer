@@ -217,7 +217,7 @@
 		"ds_HvnIp6ON_ds_LASvWJH6_ds_nPQ7im1n_ds_xwxresdO": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" \"nsEnrollmentToken.cpp\"\n| rex field=_raw \"cpp:\\d+\\s+(?<MSG>.*)\"\n| stats values(MSG) as Error",
+				"query": "index=netskope_client1 host=\"$field1$\" \"nsEnrollmentToken.cpp\" OR \"prelogon.netskope.com\" OR \"PrelogonConfig.cpp\"\n| rex field=_raw \"(?<LogTime>\\d{4}[-|\\/]\\d{2}[-|\\/]\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*cpp:\\d+\\s+(?<MSG>.*)\"\n| table LogTime, MSG\n| sort LogTime",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"
@@ -471,14 +471,6 @@
 				"fontSize": "extraLarge"
 			}
 		},
-		"viz_Hew2lX07": {
-			"type": "splunk.markdown",
-			"options": {
-				"markdown": "### IDP enroll status",
-				"backgroundColor": "#708794",
-				"fontSize": "extraLarge"
-			}
-		},
 		"viz_2p9qfOT1": {
 			"type": "splunk.table",
 			"options": {
@@ -503,8 +495,7 @@
 					"LogTime": {
 						"width": 60
 					}
-				},
-				"fontSize": "extraSmall"
+				}
 			},
 			"dataSources": {
 				"primary": "ds_LASvWJH6_ds_nPQ7im1n_ds_xwxresdO"
@@ -526,7 +517,7 @@
 		"viz_rhzcrSTR": {
 			"type": "splunk.table",
 			"options": {
-				"count": 100,
+				"count": 500,
 				"dataOverlayMode": "none",
 				"drilldown": "none",
 				"showRowNumbers": false,
@@ -547,8 +538,7 @@
 					"LogTime": {
 						"width": 60
 					}
-				},
-				"fontSize": "extraSmall"
+				}
 			},
 			"dataSources": {
 				"primary": "ds_HvnIp6ON_ds_LASvWJH6_ds_nPQ7im1n_ds_xwxresdO"
@@ -626,7 +616,7 @@
 					"x": 10,
 					"y": 1470,
 					"w": 1420,
-					"h": 310
+					"h": 1400
 				}
 			},
 			{
@@ -694,9 +684,9 @@
 				"type": "block",
 				"position": {
 					"x": 10,
-					"y": 1800,
-					"w": 1410,
-					"h": 910
+					"y": 2890,
+					"w": 1420,
+					"h": 870
 				}
 			},
 			{
@@ -704,9 +694,9 @@
 				"type": "block",
 				"position": {
 					"x": 710,
-					"y": 2020,
+					"y": 3100,
 					"w": 700,
-					"h": 260
+					"h": 290
 				}
 			},
 			{
@@ -714,7 +704,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 1860,
+					"y": 2950,
 					"w": 670,
 					"h": 130
 				}
@@ -723,8 +713,8 @@
 				"item": "viz_HPsm8cqG",
 				"type": "block",
 				"position": {
-					"x": 240,
-					"y": 1810,
+					"x": 250,
+					"y": 2900,
 					"w": 40,
 					"h": 20
 				}
@@ -790,21 +780,11 @@
 				}
 			},
 			{
-				"item": "viz_Hew2lX07",
-				"type": "block",
-				"position": {
-					"x": 10,
-					"y": 2410,
-					"w": 1410,
-					"h": 1230
-				}
-			},
-			{
 				"item": "viz_a83r9Cfd",
 				"type": "block",
 				"position": {
 					"x": 710,
-					"y": 1860,
+					"y": 2950,
 					"w": 700,
 					"h": 130
 				}
@@ -814,9 +794,9 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 2020,
+					"y": 3100,
 					"w": 670,
-					"h": 260
+					"h": 290
 				}
 			},
 			{
@@ -824,9 +804,9 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 2310,
+					"y": 3410,
 					"w": 670,
-					"h": 300
+					"h": 320
 				}
 			},
 			{
@@ -834,8 +814,8 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 3010,
-					"w": 1390,
+					"y": 2470,
+					"w": 1400,
 					"h": 380
 				}
 			},
@@ -844,8 +824,8 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 2620,
-					"w": 1390,
+					"y": 2080,
+					"w": 1400,
 					"h": 380
 				}
 			},
@@ -853,10 +833,10 @@
 				"item": "viz_rhzcrSTR",
 				"type": "block",
 				"position": {
-					"x": 910,
-					"y": 1520,
-					"w": 500,
-					"h": 200
+					"x": 20,
+					"y": 1710,
+					"w": 1400,
+					"h": 360
 				}
 			},
 			{
@@ -864,19 +844,19 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 1520,
-					"w": 370,
-					"h": 200
+					"y": 1510,
+					"w": 680,
+					"h": 190
 				}
 			},
 			{
 				"item": "viz_tbkwWLyw",
 				"type": "block",
 				"position": {
-					"x": 400,
-					"y": 1520,
-					"w": 500,
-					"h": 200
+					"x": 720,
+					"y": 1510,
+					"w": 700,
+					"h": 190
 				}
 			}
 		],

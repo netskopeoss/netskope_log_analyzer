@@ -312,6 +312,17 @@
 				}
 			},
 			"name": "Enrollment"
+		},
+		"ds_T9mK391v_ds_iohORCkR_ds_nz8SDx8s_ds_uymu0ww9": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_json1 host=\"$field1$\" sourcetype=\"nsconfig\" source=\"*nsconfig.json\"\n| table privateApps*, source\n| transpose",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "NPA basic infomation copy 1"
 		}
 	},
 	"visualizations": {
@@ -607,6 +618,16 @@
 				},
 				"count": 500
 			}
+		},
+		"viz_3Po3IgL9": {
+			"type": "splunk.table",
+			"dataSources": {
+				"primary": "ds_T9mK391v_ds_iohORCkR_ds_nz8SDx8s_ds_uymu0ww9"
+			},
+			"title": "Basic infomation - nsconfig",
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false
 		}
 	},
 	"inputs": {
@@ -645,7 +666,7 @@
 					"x": 10,
 					"y": 10,
 					"w": 1420,
-					"h": 2480
+					"h": 2950
 				}
 			},
 			{
@@ -653,7 +674,7 @@
 				"type": "block",
 				"position": {
 					"x": 10,
-					"y": 3900,
+					"y": 4370,
 					"w": 1420,
 					"h": 1710
 				}
@@ -663,7 +684,7 @@
 				"type": "block",
 				"position": {
 					"x": 10,
-					"y": 2500,
+					"y": 2970,
 					"w": 1420,
 					"h": 1390
 				}
@@ -673,7 +694,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 5170,
+					"y": 5640,
 					"w": 1390,
 					"h": 390
 				}
@@ -683,7 +704,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 3430,
+					"y": 3900,
 					"w": 1400,
 					"h": 220
 				}
@@ -693,7 +714,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 2540,
+					"y": 3010,
 					"w": 680,
 					"h": 190
 				}
@@ -703,7 +724,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 3660,
+					"y": 4130,
 					"w": 1400,
 					"h": 220
 				}
@@ -713,7 +734,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 4500,
+					"y": 4970,
 					"w": 1400,
 					"h": 260
 				}
@@ -723,7 +744,7 @@
 				"type": "block",
 				"position": {
 					"x": 330,
-					"y": 2510,
+					"y": 2980,
 					"w": 90,
 					"h": 30
 				}
@@ -733,7 +754,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 2740,
+					"y": 3210,
 					"w": 1400,
 					"h": 450
 				}
@@ -743,7 +764,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 4770,
+					"y": 5240,
 					"w": 1400,
 					"h": 380
 				}
@@ -753,7 +774,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 4230,
+					"y": 4700,
 					"w": 1400,
 					"h": 260
 				}
@@ -763,7 +784,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 3940,
+					"y": 4410,
 					"w": 1400,
 					"h": 280
 				}
@@ -773,7 +794,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 600,
+					"y": 1070,
 					"w": 1400,
 					"h": 350
 				}
@@ -783,7 +804,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 1440,
+					"y": 1910,
 					"w": 1400,
 					"h": 550
 				}
@@ -793,7 +814,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 2000,
+					"y": 2470,
 					"w": 1400,
 					"h": 480
 				}
@@ -823,9 +844,9 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 210,
+					"y": 640,
 					"w": 1400,
-					"h": 380
+					"h": 410
 				}
 			},
 			{
@@ -833,7 +854,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 3200,
+					"y": 3670,
 					"w": 1400,
 					"h": 220
 				}
@@ -843,9 +864,19 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 960,
+					"y": 1430,
 					"w": 1400,
 					"h": 470
+				}
+			},
+			{
+				"item": "viz_3Po3IgL9",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 220,
+					"w": 1400,
+					"h": 400
 				}
 			}
 		],

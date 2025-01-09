@@ -206,7 +206,7 @@
 		"ds_HuwBRM3v_ds_hLXoE9n0": {
 			"type": "ds.search",
 			"options": {
-				"query": "host=\"$field1$\" index=netskope_json1 sourcetype=nsconfig source=\"*nsconfig.json\" AND NOT source=\"*prelogon_nsconfig.json\"\n| rename \ngslb.host as \"001. gslb.host\",\ngslb.port as \"002. gslb.port\",\nnpa.gslb.port as \"003. gslb.port\",\nnpa.gslb.port as \"004. gslb.port\",\nnpa_gslb_client* as \"005. npa_gslb_client*\"\nprc_dp_tenant as \"006. prc_dp_tenant\"\n| table 0*\n| transpose 0 column_name=\"header\":\n| fields - \"column\"",
+				"query": "host=\"$field1$\" index=netskope_json1 sourcetype=nsconfig source=\"*nsconfig.json\" AND NOT source=\"*prelogon_nsconfig.json\"\n| rename \ngslb.host as \"001. gslb.host\",\ngslb.port as \"002. gslb.port\",\nnpa.gslb.port as \"003. gslb.port\",\nnpa.gslb.port as \"004. gslb.port\",\nnpa_gslb_client* as \"005. npa_gslb_client*\"\nprc_dp_tenant as \"006. prc_dp_tenant\"\n| table 00*\n| transpose 0 column_name=\"header\":\n| fields - \"column\"",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"

@@ -8,7 +8,7 @@
 		"ds_nwd5jErf": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=npadebuglog  \"Getting policy rule\" OR \"No matching\"\n| rex field=_raw \"(?<LogTime>\\d{4}[-|\\/]\\d{2}[-|\\/]\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*host\\s(?<dsthost>.*)\\sip\\s(?<hex>.*),\\sproto\\s(?<proto>.*)\\sport\\s(?<port>.*)\"\n| rex field=hex \"(?<d1>[0-9A-Fa-f]{1,2})(?<d2>[0-9A-Fa-f]{2})(?<d3>[0-9A-Fa-f]{2})(?<d4>[0-9A-Fa-f]{2})\"\n| rex field=_raw \"(?<LogTime>\\d{4}[-|\\/]\\d{2}[-|\\/]\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*(?<msg>No\\smatching.*)\"\n| eval ip_from_Hex=if(isnotnull(hex), tostring(tonumber(d4,16))+\".\"+tostring(tonumber(d3,16))+\".\"+tostring(tonumber(d2,16))+\".\"+tostring(tonumber(d1,16)), null)\n| eval dsthost=if(isnull('dsthost'), msg, dsthost)\n| table LogTime, dsthost, hex, ip_from_Hex, proto, port\n| sort LogTime",
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=npadebuglog  \"Getting policy rule\" \n| rex field=_raw \"(?<LogTime>\\d{4}[-|\\/]\\d{2}[-|\\/]\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*host\\s(?<dsthost>.*)\\sip\\s(?<hex>.*),\\sproto\\s(?<proto>.*)\\sport\\s(?<port>.*)\"\n| rex field=hex \"(?<d1>[0-9A-Fa-f]{1,2})(?<d2>[0-9A-Fa-f]{2})(?<d3>[0-9A-Fa-f]{2})(?<d4>[0-9A-Fa-f]{2})\"\n| rex field=_raw \"(?<LogTime>\\d{4}[-|\\/]\\d{2}[-|\\/]\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*(?<msg>No\\smatching.*)\"\n| eval ip_from_Hex=if(isnotnull(hex), tostring(tonumber(d4,16))+\".\"+tostring(tonumber(d3,16))+\".\"+tostring(tonumber(d2,16))+\".\"+tostring(tonumber(d1,16)), null)\n| eval dsthost=if(isnull('dsthost'), msg, dsthost)\n| table LogTime, dsthost, hex, ip_from_Hex, proto, port\n| sort LogTime",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"
@@ -19,7 +19,7 @@
 		"ds_p8PZ4Okn": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=npadebuglog \"Adding\" AND \"Rule\"\n| rex field=_raw \"\\sRule\\s(?<rule>[\\s\\S]*)\"\n| rex field=rule \"Name:\\s(?<Policy>.*)\"\n| rex field=rule \"(?<Target>.*:.*:.*;)\"\n| rex field=rule \"Action:(?<Action>.*)\"\n| rex field=rule \"Publisher[s]:(?<Publisher>.*)\"\n| rex field=rule \"Use\\sPrivate\\sDNS\\:(?<Use_Private_DNS>.*)\"\n| fillnull value=null Policy, Target, Action, Stitcher, Publisher, Use_Private_DNS\n| stats values(Target) as Target count by Policy, Publisher, Action,  Use_Private_DNS\n| sort -count",
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=npadebuglog \"Adding\" AND \"Rule\"\n| rex field=_raw \"\\sRule\\s(?<rule>[\\s\\S]*)\"\n| rex field=rule \"Policy\\sName:\\s(?<Policy>.*)\"\n| rex field=rule \"App\\sName:\\s(?<PrivateApp>.*)\"\n| rex field=rule \"(?<Target>.*:.*:.*;)\"\n| rex field=rule \"Action:(?<Action>.*)\"\n| rex field=rule \"Publisher[s]:(?<Publisher>.*)\"\n| rex field=rule \"Use\\sPrivate\\sDNS\\:(?<Use_Private_DNS>.*)\"\n| fillnull value=null Policy, PrivateApp, Target, Action, Stitcher, Publisher, Use_Private_DNS\n| stats values(Target) as Target by Policy, PrivateApp, Publisher, Action,  Use_Private_DNS\n| sort by Policy, PrivateApp",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"
@@ -224,13 +224,23 @@
 				}
 			},
 			"name": "Rule copy 1"
+		},
+		"ds_WppUorFU_ds_nwd5jErf": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=npadebuglog \"No matching rule\"\n| rex field=_raw \"(?<LogTime>\\d{4}[-|\\/]\\d{2}[-|\\/]\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*host:\\s(?<desthost>.*)\"\n| table LogTime, desthost\n| sort LogTime",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "NPA No matching rule found"
 		}
 	},
 	"visualizations": {
 		"viz_WHKIZd1n": {
 			"type": "splunk.table",
 			"options": {
-				"count": 500,
 				"columnFormat": {
 					"ip_from_Hex": {
 						"width": 96
@@ -241,7 +251,8 @@
 					"LogTime": {
 						"width": 162
 					}
-				}
+				},
+				"count": 1000
 			},
 			"dataSources": {
 				"primary": "ds_nwd5jErf"
@@ -261,7 +272,7 @@
 				"showInternalFields": false,
 				"columnFormat": {
 					"Policy": {
-						"width": 95
+						"width": 87
 					},
 					"Publisher": {
 						"width": 72
@@ -342,6 +353,30 @@
 				"backgroundColor": "#708794",
 				"fontSize": "extraLarge"
 			}
+		},
+		"viz_LYHJ0Uto": {
+			"type": "splunk.table",
+			"options": {
+				"columnFormat": {
+					"ip_from_Hex": {
+						"width": 96
+					},
+					"dsthost": {
+						"width": 96
+					},
+					"LogTime": {
+						"width": 60
+					}
+				},
+				"count": 1000
+			},
+			"dataSources": {
+				"primary": "ds_WppUorFU_ds_nwd5jErf"
+			},
+			"title": "No matching rule found host",
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false
 		}
 	},
 	"inputs": {
@@ -428,6 +463,16 @@
 				"position": {
 					"x": 20,
 					"y": 1070,
+					"w": 1400,
+					"h": 680
+				}
+			},
+			{
+				"item": "viz_LYHJ0Uto",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 2520,
 					"w": 1400,
 					"h": 680
 				}
