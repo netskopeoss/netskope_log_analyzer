@@ -474,7 +474,7 @@
 		"viz_2p9qfOT1": {
 			"type": "splunk.table",
 			"options": {
-				"count": 300,
+				"count": 500,
 				"dataOverlayMode": "none",
 				"drilldown": "none",
 				"showRowNumbers": false,

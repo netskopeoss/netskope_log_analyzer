@@ -305,7 +305,7 @@
 		"ds_2QlqO3sX_ds_FdRRg5Qz_ds_Cfo912F2_ds_ydLKTkRP_ds_ORP4wiSl_ds_YSgjGLGw_ds_mzmNhkaL_ds_v57DBEEj_ds_hLXoE9n0": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" \"tunnel.cpp\" AND \"TLS Using proxy\"\n| rex field=_raw \"Using\\sproxy\\s(?<Msg>.*)\\sfor\"\n| table _time, Msg\n| sort -_time",
+				"query": "index=netskope_client1 host=\"$field1$\" (\"tunnel.cpp\" AND \"TLS Using proxy\") OR (\"Connected to\" AND \"Successfully\")\n| table _raw\n| sort _raw",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"
@@ -552,7 +552,7 @@
 			"showProgressBar": false,
 			"showLastUpdated": false,
 			"options": {
-				"count": 100
+				"count": 800
 			}
 		},
 		"viz_dAokkZaq": {
@@ -595,10 +595,13 @@
 			"dataSources": {
 				"primary": "ds_2QlqO3sX_ds_FdRRg5Qz_ds_Cfo912F2_ds_ydLKTkRP_ds_ORP4wiSl_ds_YSgjGLGw_ds_mzmNhkaL_ds_v57DBEEj_ds_hLXoE9n0"
 			},
-			"title": "Tunnel was established via On-prem Proxy",
+			"title": "Tunnel was established via On-prem Proxy?",
 			"containerOptions": {},
 			"showProgressBar": false,
-			"showLastUpdated": false
+			"showLastUpdated": false,
+			"options": {
+				"count": 1000
+			}
 		},
 		"viz_6VwXJ9dP": {
 			"type": "splunk.table",
@@ -693,7 +696,7 @@
 				"type": "block",
 				"position": {
 					"x": 10,
-					"y": 2660,
+					"y": 2960,
 					"w": 1420,
 					"h": 1240
 				}
@@ -703,7 +706,7 @@
 				"type": "block",
 				"position": {
 					"x": 10,
-					"y": 1770,
+					"y": 2070,
 					"w": 1420,
 					"h": 870
 				}
@@ -715,7 +718,7 @@
 					"x": 10,
 					"y": 10,
 					"w": 1420,
-					"h": 1750
+					"h": 2050
 				}
 			},
 			{
@@ -723,7 +726,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 3500,
+					"y": 3800,
 					"w": 1400,
 					"h": 390
 				}
@@ -733,7 +736,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 990,
+					"y": 970,
 					"w": 1400,
 					"h": 230
 				}
@@ -753,7 +756,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 1240,
+					"y": 1210,
 					"w": 1400,
 					"h": 230
 				}
@@ -763,7 +766,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 2370,
+					"y": 2670,
 					"w": 1400,
 					"h": 260
 				}
@@ -772,8 +775,8 @@
 				"item": "viz_BlwX4Azv",
 				"type": "block",
 				"position": {
-					"x": 310,
-					"y": 10,
+					"x": 340,
+					"y": 20,
 					"w": 70,
 					"h": 20
 				}
@@ -793,7 +796,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 2710,
+					"y": 3010,
 					"w": 1400,
 					"h": 380
 				}
@@ -803,7 +806,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 2100,
+					"y": 2400,
 					"w": 1400,
 					"h": 260
 				}
@@ -813,7 +816,7 @@
 				"type": "block",
 				"position": {
 					"x": 10,
-					"y": 3910,
+					"y": 4210,
 					"w": 1420,
 					"h": 1640
 				}
@@ -823,7 +826,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 1810,
+					"y": 2110,
 					"w": 1400,
 					"h": 280
 				}
@@ -833,7 +836,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 3970,
+					"y": 4270,
 					"w": 1400,
 					"h": 290
 				}
@@ -843,7 +846,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 4290,
+					"y": 4590,
 					"w": 1400,
 					"h": 290
 				}
@@ -853,7 +856,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 4600,
+					"y": 4900,
 					"w": 1400,
 					"h": 290
 				}
@@ -863,7 +866,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 4910,
+					"y": 5210,
 					"w": 1400,
 					"h": 290
 				}
@@ -873,7 +876,7 @@
 				"type": "block",
 				"position": {
 					"x": 10,
-					"y": 5571,
+					"y": 5871,
 					"w": 1420,
 					"h": 819
 				}
@@ -883,7 +886,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 5620,
+					"y": 5920,
 					"w": 1400,
 					"h": 350
 				}
@@ -893,9 +896,9 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 5240,
+					"y": 1710,
 					"w": 1400,
-					"h": 290
+					"h": 340
 				}
 			},
 			{
@@ -903,7 +906,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 5990,
+					"y": 6290,
 					"w": 1400,
 					"h": 340
 				}
@@ -913,7 +916,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 3100,
+					"y": 3400,
 					"w": 1400,
 					"h": 390
 				}
@@ -923,7 +926,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 1490,
+					"y": 1450,
 					"w": 1400,
 					"h": 250
 				}
@@ -933,7 +936,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 740,
+					"y": 730,
 					"w": 1400,
 					"h": 230
 				}
