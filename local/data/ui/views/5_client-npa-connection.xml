@@ -30,7 +30,7 @@
 		"ds_hLXoE9n0": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" \"TLS client established connection\" OR \"NPA Tunnel Status: Connected\"\n| rex field=_raw \"(?<NPA_GW>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\"\n| timechart count by NPA_GW",
+				"query": "index=netskope_client1 host=\"$field1$\" \"TLS client established connection\" OR \"NPA Tunnel Status: Connected\"\n\nearliest=[ search index=netskope_client1 host=\"$field1$\"  | stats min(_time) as earliest_time | return $earliest_time ]  \nlatest=[ search index=netskope_client1 host=\"$field1$\"  | stats max(_time) as latest_time | return $latest_time ]\n\n| rex field=_raw \"(?<NPA_GW>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\"\n| timechart count by NPA_GW",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"
@@ -63,13 +63,13 @@
 		"ds_9ze5Vfw0": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" \"post client rtt\" \n| rex field=_raw \"\\[(?<Client>.*)\\]:\\spost\\sclient\\srtt\\spop\\:(?<PoP>.*)\\sip\\:(?<GatewayIP>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\srtt:(?<RTT>\\d+)\"\n| where Client=\"NPA\"\n| eval Dst=Client.\"_\".PoP.\"_\".GatewayIP\n| stats avg(RTT) as AvgRTT by Dst\n| eval AvgRTT=round(AvgRTT, 2)\n| sort AvgRTT, Dst",
+				"query": "index=netskope_client1 host=\"$field1$\" \"post client rtt\" AND npa\n| rex field=_raw \"\\[(?<Client>.*)\\]:\\spost\\sclient\\srtt\\spop\\:(?<PoP>.*)\\sip\\:(?<GatewayIP>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\srtt:(?<RTT>\\d+)\"\n| where Client=\"NPA\"\n| eval Dst=Client.\"_\".PoP.\"_\".GatewayIP\n| stats avg(RTT) as AvgRTT by Dst\n| eval AvgRTT=round(AvgRTT, 2)\n| sort AvgRTT, Dst",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"
 				}
 			},
-			"name": "GSLB RTT"
+			"name": "NPA GSLB RTT"
 		},
 		"ds_v57DBEEj_ds_hLXoE9n0": {
 			"type": "ds.search",
@@ -85,7 +85,7 @@
 		"ds_USxTAkrP_ds_9ze5Vfw0": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"npadebuglog\"  \"NPAGW\" AND \"RETRANS\" AND \"RTT\"\n| rex field=_raw \"NPAGW\\s(?<NPAGW>.*):\\sRETRANS.*RTT:(?<RTT>\\d+)ms,\"\n| timechart span=1h max(RTT) as RTT by NPAGW",
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"npadebuglog\"  \"NPAGW\" AND \"RETRANS\" AND \"RTT\"\n\nearliest=[ search index=netskope_client1 host=\"$field1$\"  sourcetype=npadebuglog | stats min(_time) as earliest_time | return $earliest_time ]  \nlatest=[ search index=netskope_client1 host=\"$field1$\"  sourcetype=npadebuglog | stats max(_time) as latest_time | return $latest_time ]\n\n| rex field=_raw \"NPAGW\\s(?<NPAGW>.*):\\sRETRANS.*RTT:(?<RTT>\\d+)ms,\"\n| timechart span=1h max(RTT) as RTT by NPAGW",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"
@@ -140,7 +140,7 @@
 		"ds_QkgEDkPy_ds_mzmNhkaL_ds_v57DBEEj_ds_hLXoE9n0": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\"\nsourcetype=nsdebuglog \"nsDnsResolver.cpp\" AND \"dnsResolver\" AND \"*DNS\"\n| rex field=_raw \"(?<Gateway>gateway.*)\\sby\\s(?<DNS>.*)\" \n| eval MSG=DNS.\"_\".Gateway\n| timechart usenull=false count by MSG",
+				"query": "index=netskope_client1 host=\"$field1$\"\nsourcetype=nsdebuglog \"nsDnsResolver.cpp\" AND \"dnsResolver\" AND \"*DNS\"\n\nearliest=[ search index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog | stats min(_time) as earliest_time | return $earliest_time ]  \nlatest=[ search index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog | stats max(_time) as latest_time | return $latest_time ]\n\n| rex field=_raw \"(?<Gateway>gateway.*)\\sby\\s(?<DNS>.*)\" \n| eval MSG=DNS.\"_\".Gateway\n| timechart usenull=false count by MSG",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"
@@ -323,6 +323,17 @@
 				}
 			},
 			"name": "NPA basic infomation copy 1"
+		},
+		"ds_DobnpawB_ds_9ze5Vfw0": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog \"post client rtt\" AND npa\r\n\r\nearliest=[ search index=netskope_client1 host=\"$field1$\"  sourcetype=nsdebuglog \"post client rtt\" AND npa | stats min(_time) as earliest_time | return $earliest_time ]  \r\nlatest=[ search index=netskope_client1 host=\"$field1$\"  sourcetype=nsdebuglog \"post client rtt\"  AND npa | stats max(_time) as latest_time | return $latest_time ]\r\n\r\n| rex field=_raw \"\\[(?<Client>.*)\\]:\\spost\\sclient\\srtt\\spop\\:(?<PoP>.*)\\sip\\:(?<GatewayIP>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\srtt:(?<RTT>\\d+)\"\r\n| eval Dst=Client.\"_\".PoP.\"_\".GatewayIP\r\n| timechart span=15m max(RTT) by Dst",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "NPA GSLB RTT tunechart"
 		}
 	},
 	"visualizations": {
@@ -550,7 +561,7 @@
 			"showProgressBar": false,
 			"showLastUpdated": false,
 			"options": {
-				"count": 100
+				"count": 1000
 			},
 			"description": "Use this value to check backend log"
 		},
@@ -628,6 +639,20 @@
 			"containerOptions": {},
 			"showProgressBar": false,
 			"showLastUpdated": false
+		},
+		"viz_rmsy9TYZ": {
+			"type": "splunk.area",
+			"dataSources": {
+				"primary": "ds_DobnpawB_ds_9ze5Vfw0"
+			},
+			"title": "GSLB RTT",
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false,
+			"options": {
+				"legendDisplay": "bottom",
+				"stackMode": "stacked"
+			}
 		}
 	},
 	"inputs": {
@@ -676,7 +701,7 @@
 					"x": 10,
 					"y": 4370,
 					"w": 1420,
-					"h": 1710
+					"h": 2160
 				}
 			},
 			{
@@ -877,6 +902,16 @@
 					"y": 220,
 					"w": 1400,
 					"h": 400
+				}
+			},
+			{
+				"item": "viz_rmsy9TYZ",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 6050,
+					"w": 1390,
+					"h": 390
 				}
 			}
 		],

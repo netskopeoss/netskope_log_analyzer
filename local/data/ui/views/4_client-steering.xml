@@ -404,7 +404,7 @@
 		"ds_k9DPYgqN_ds_bPzLCYSQ_ds_tFQJ5Y1y_ds_nyIc4PX7_ds_hQ3DTGtU": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog  \"CProxyMgr Bypassing flow from\"\n| rex field=_raw \"\\sto\\s(?<MSG>.*)\"\n| stats values(MSG) as MSG\n| sort -count",
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog  \"Bypassing flow from\"\n| rex field=_raw \"from\\sprocess:\\s(?<MSG>.*)\"\n| stats values(MSG) as MSG\n| sort -count",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"
@@ -426,7 +426,7 @@
 		"ds_0JMlGVfQ_ds_ttnOtVXy_ds_lMaikGeN": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_json1 host=\"$field1$\" sourcetype=nsconfig source=\"*nsbypass.json\"\n| table *.appName",
+				"query": "index=netskope_json1 host=\"$field1$\" sourcetype=nsconfig source=\"*nsbypass.json\"\n| spath input=_raw path=certPinnedAppList{} output=certPinnedAppList\n| mvexpand certPinnedAppList\n| spath input=certPinnedAppList\n| table appName, app_domains{}, mode, processName, rowID, tunnel_domains{}",
 				"queryParameters": {
 					"earliest": "0",
 					"latest": "now"
@@ -727,7 +727,7 @@
 			"dataSources": {
 				"primary": "ds_k9DPYgqN_ds_bPzLCYSQ_ds_tFQJ5Y1y_ds_nyIc4PX7_ds_hQ3DTGtU"
 			},
-			"title": "CProxyMgr Bypassing flow from",
+			"title": "Bypassing flow from",
 			"containerOptions": {},
 			"showProgressBar": false,
 			"showLastUpdated": false,
@@ -762,7 +762,7 @@
 		"viz_qDf3tilf": {
 			"type": "splunk.table",
 			"options": {
-				"count": 100,
+				"count": 200,
 				"dataOverlayMode": "none",
 				"drilldown": "none",
 				"showRowNumbers": false,
@@ -772,6 +772,22 @@
 				"primary": "ds_0JMlGVfQ_ds_ttnOtVXy_ds_lMaikGeN"
 			},
 			"title": "nsbypass.json"
+		},
+		"viz_KS16VEVz": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "### nsbypass.json",
+				"backgroundColor": "#708794",
+				"fontSize": "extraLarge"
+			}
+		},
+		"viz_JYWklRZN": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "### nsbypass.json",
+				"backgroundColor": "#708794",
+				"fontSize": "extraLarge"
+			}
 		}
 	},
 	"inputs": {
@@ -802,6 +818,26 @@
 			"height": 9000
 		},
 		"structure": [
+			{
+				"item": "viz_JYWklRZN",
+				"type": "block",
+				"position": {
+					"x": 10,
+					"y": 5870,
+					"w": 1420,
+					"h": 970
+				}
+			},
+			{
+				"item": "viz_KS16VEVz",
+				"type": "block",
+				"position": {
+					"x": 10,
+					"y": 5010,
+					"w": 1420,
+					"h": 850
+				}
+			},
 			{
 				"item": "viz_UOKGClkL",
 				"type": "block",
@@ -929,7 +965,7 @@
 					"x": 10,
 					"y": 4180,
 					"w": 1420,
-					"h": 2100
+					"h": 810
 				}
 			},
 			{
@@ -977,7 +1013,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 4980,
+					"y": 5910,
 					"w": 1400,
 					"h": 380
 				}
@@ -997,9 +1033,9 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 5380,
+					"y": 6310,
 					"w": 1400,
-					"h": 380
+					"h": 510
 				}
 			},
 			{
@@ -1017,9 +1053,9 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 5780,
-					"w": 1390,
-					"h": 470
+					"y": 5060,
+					"w": 1400,
+					"h": 780
 				}
 			}
 		],

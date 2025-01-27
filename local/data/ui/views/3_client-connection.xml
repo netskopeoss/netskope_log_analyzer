@@ -19,7 +19,7 @@
 		"ds_hLXoE9n0": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog \"Tunnel established to gateway\"\n| rex field=_raw \"gateway:\\s(?<gateway>.*),\\spop:\\s(?<pop>.*),\\sassigned\\sip:\\s(?<gatewayip>.*),\\sCFW\\sstatus:\\s(?<CFWStatus>.*)\"\n| timechart count by pop",
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog \"Tunnel established to gateway\"\n\nearliest=[ search index=netskope_client1 host=\"$field1$\"  sourcetype=nsdebuglog | stats min(_time) as earliest_time | return $earliest_time ]  \nlatest=[ search index=netskope_client1 host=\"$field1$\"  sourcetype=nsdebuglog | stats max(_time) as latest_time | return $latest_time ]\n\n| rex field=_raw \"gateway:\\s(?<gateway>.*),\\spop:\\s(?<pop>.*),\\sassigned\\sip:\\s(?<gatewayip>.*),\\sCFW\\sstatus:\\s(?<CFWStatus>.*)\"\n| timechart count by pop",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"
@@ -173,7 +173,7 @@
 		"ds_USxTAkrP_ds_9ze5Vfw0": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog  \"connected to remote host\"\n| rex field=_raw \"(?<GatewayIP>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}):443,\\sRTT\\s(?<RTT>\\d+)\\smsec\"\n| timechart avg(RTT) as AvgRTT by GatewayIP\n| eval AvgRtt=round(AvgRtt, 2)",
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog  \"connected to remote host\"\n\nearliest=[ search index=netskope_client1 host=\"$field1$\"  sourcetype=nsdebuglog | stats min(_time) as earliest_time | return $earliest_time ]  \nlatest=[ search index=netskope_client1 host=\"$field1$\"  sourcetype=nsdebuglog | stats max(_time) as latest_time | return $latest_time ]\n\n| rex field=_raw \"(?<GatewayIP>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}):443,\\sRTT\\s(?<RTT>\\d+)\\smsec\"\n| timechart avg(RTT) as AvgRTT by GatewayIP\n| eval AvgRtt=round(AvgRtt, 2)",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"
@@ -228,7 +228,7 @@
 		"ds_QkgEDkPy_ds_mzmNhkaL_ds_v57DBEEj_ds_hLXoE9n0": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\"\nsourcetype=nsdebuglog \"nsDnsResolver.cpp\" AND \"dnsResolver\" AND \"*DNS\"\n| rex field=_raw \"(?<Gateway>gateway.*)\\sby\\s(?<DNS>.*)\" \n| eval MSG=DNS.\"_\".Gateway\n| timechart usenull=false count by MSG",
+				"query": "index=netskope_client1 host=\"$field1$\"\nsourcetype=nsdebuglog \"nsDnsResolver.cpp\" AND \"dnsResolver\" AND \"*DNS\"\n\nearliest=[ search index=netskope_client1 host=\"$field1$\"  sourcetype=nsdebuglog | stats min(_time) as earliest_time | return $earliest_time ]  \nlatest=[ search index=netskope_client1 host=\"$field1$\"  sourcetype=nsdebuglog | stats max(_time) as latest_time | return $latest_time ]\n\n| rex field=_raw \"(?<Gateway>gateway.*)\\sby\\s(?<DNS>.*)\" \n| eval MSG=DNS.\"_\".Gateway\n| timechart usenull=false count by MSG",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"
@@ -349,13 +349,24 @@
 		"ds_HNCs361n_ds_USxTAkrP_ds_9ze5Vfw0": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"nsAppUI\" \"systemtray Service status\" OR \"===\"\n| rex field=_raw \"(?<LogTime>\\d{4}[-|\\/]\\d{2}[-|\\/]\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*\\[Internet\\sSecurity=(?<InternetSecurity>[^\\]]*)\\](?:\\s\\[Private\\sAccess=(?<PrivateAccess>[^\\]]*)\\])?(?:\\s\\[Endpoint\\sDLP=(?<EndpointDLP>[^\\]]*)\\])?\"\n| eval _time=strptime(LogTime, \"%Y/%m/%d %H:%M:%S.%3N\")\n| timechart count by InternetSecurity",
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"nsAppUI\" \"systemtray Service status\" OR \"===\"\n\nearliest=[ search index=netskope_client1 host=\"$field1$\" sourcetype=\"nsAppUI\"  | stats min(_time) as earliest_time | return $earliest_time ]  \nlatest=[ search index=netskope_client1 host=\"$field1$\" sourcetype=\"nsAppUI\"  | stats max(_time) as latest_time | return $latest_time ]\n\n| rex field=_raw \"(?<LogTime>\\d{4}[-|\\/]\\d{2}[-|\\/]\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*\\[Internet\\sSecurity=(?<InternetSecurity>[^\\]]*)\\](?:\\s\\[Private\\sAccess=(?<PrivateAccess>[^\\]]*)\\])?(?:\\s\\[Endpoint\\sDLP=(?<EndpointDLP>[^\\]]*)\\])?\"\n| eval _time=strptime(LogTime, \"%Y/%m/%d %H:%M:%S.%3N\")\n| timechart count by InternetSecurity",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"
 				}
 			},
 			"name": "Avg RTT copy 1"
+		},
+		"ds_aHIqMkOi_ds_9ze5Vfw0": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog \"post client rtt\" \r\n\r\nearliest=[ search index=netskope_client1 host=\"$field1$\"  sourcetype=nsdebuglog \"post client rtt\" | stats min(_time) as earliest_time | return $earliest_time ]  \r\nlatest=[ search index=netskope_client1 host=\"$field1$\"  sourcetype=nsdebuglog \"post client rtt\"  | stats max(_time) as latest_time | return $latest_time ]\r\n\r\n| rex field=_raw \"\\[(?<Client>.*)\\]:\\spost\\sclient\\srtt\\spop\\:(?<PoP>.*)\\sip\\:(?<GatewayIP>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\srtt:(?<RTT>\\d+)\"\r\n| eval Dst=Client.\"_\".PoP.\"_\".GatewayIP\r\n| timechart span=15m max(RTT) by Dst",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "GSLB RTT timechart"
 		}
 	},
 	"visualizations": {
@@ -369,7 +380,8 @@
 			"showProgressBar": false,
 			"showLastUpdated": false,
 			"options": {
-				"legendDisplay": "bottom"
+				"legendDisplay": "bottom",
+				"stackMode": "stacked"
 			}
 		},
 		"viz_UOKGClkL": {
@@ -539,7 +551,7 @@
 			"showProgressBar": false,
 			"showLastUpdated": false,
 			"options": {
-				"count": 100
+				"count": 2000
 			}
 		},
 		"viz_0zQAuu81": {
@@ -661,6 +673,20 @@
 				"yAxisScale": "log",
 				"stackMode": "stacked"
 			}
+		},
+		"viz_FYCeTijH": {
+			"type": "splunk.area",
+			"dataSources": {
+				"primary": "ds_aHIqMkOi_ds_9ze5Vfw0"
+			},
+			"title": "GSLB RTT",
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false,
+			"options": {
+				"legendDisplay": "bottom",
+				"stackMode": "stacked"
+			}
 		}
 	},
 	"inputs": {
@@ -692,16 +718,6 @@
 		},
 		"structure": [
 			{
-				"item": "viz_eHFgYW5x",
-				"type": "block",
-				"position": {
-					"x": 10,
-					"y": 2960,
-					"w": 1420,
-					"h": 1240
-				}
-			},
-			{
 				"item": "viz_9QlENcr9",
 				"type": "block",
 				"position": {
@@ -722,13 +738,23 @@
 				}
 			},
 			{
+				"item": "viz_eHFgYW5x",
+				"type": "block",
+				"position": {
+					"x": 10,
+					"y": 2950,
+					"w": 1420,
+					"h": 1740
+				}
+			},
+			{
 				"item": "viz_3vBhFKl4",
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 3800,
+					"y": 3780,
 					"w": 1400,
-					"h": 390
+					"h": 440
 				}
 			},
 			{
@@ -796,7 +822,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 3010,
+					"y": 2990,
 					"w": 1400,
 					"h": 380
 				}
@@ -816,7 +842,7 @@
 				"type": "block",
 				"position": {
 					"x": 10,
-					"y": 4210,
+					"y": 4700,
 					"w": 1420,
 					"h": 1640
 				}
@@ -836,7 +862,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 4270,
+					"y": 4760,
 					"w": 1400,
 					"h": 290
 				}
@@ -846,7 +872,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 4590,
+					"y": 5080,
 					"w": 1400,
 					"h": 290
 				}
@@ -856,7 +882,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 4900,
+					"y": 5390,
 					"w": 1400,
 					"h": 290
 				}
@@ -866,7 +892,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 5210,
+					"y": 5700,
 					"w": 1400,
 					"h": 290
 				}
@@ -876,7 +902,7 @@
 				"type": "block",
 				"position": {
 					"x": 10,
-					"y": 5871,
+					"y": 6361,
 					"w": 1420,
 					"h": 819
 				}
@@ -886,7 +912,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 5920,
+					"y": 6410,
 					"w": 1400,
 					"h": 350
 				}
@@ -906,7 +932,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 6290,
+					"y": 6780,
 					"w": 1400,
 					"h": 340
 				}
@@ -916,7 +942,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 3400,
+					"y": 3380,
 					"w": 1400,
 					"h": 390
 				}
@@ -939,6 +965,16 @@
 					"y": 730,
 					"w": 1400,
 					"h": 230
+				}
+			},
+			{
+				"item": "viz_FYCeTijH",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 4240,
+					"w": 1400,
+					"h": 440
 				}
 			}
 		],
