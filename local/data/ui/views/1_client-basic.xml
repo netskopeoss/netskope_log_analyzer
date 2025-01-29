@@ -173,7 +173,7 @@
 		"ds_vRWQqpBq_ds_7CpRsbSg": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\"\n sourcetype=\"nsAppUI\" OR sourcetype=\"nsdebuglog\" OR sourcetype=\"npadebuglog\" \n| timechart span=1h count by sourcetype",
+				"query": "index=netskope_client1 host=\"$field1$\"\n sourcetype=\"nsAppUI\" OR sourcetype=\"nsdebuglog\" OR sourcetype=\"npadebuglog\" \n \n earliest=[ search index=netskope_client1 host=\"$field1$\"  sourcetype=\"nsAppUI\" OR sourcetype=\"nsdebuglog\" OR sourcetype=\"npadebuglog\" | stats min(_time) as earliest_time | return $earliest_time ]  \nlatest=[ search index=netskope_client1 host=\"$field1$\"  sourcetype=\"nsAppUI\" OR sourcetype=\"nsdebuglog\" OR sourcetype=\"npadebuglog\"  | stats max(_time) as latest_time | return $latest_time ]\n\n\n| timechart span=2h count by sourcetype",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"
@@ -343,7 +343,7 @@
 		"viz_UOKGClkL": {
 			"type": "splunk.markdown",
 			"options": {
-				"markdown": "### Log information",
+				"markdown": "### Client Log information",
 				"backgroundColor": "#708794",
 				"fontSize": "extraLarge"
 			}
@@ -673,10 +673,10 @@
 				"item": "viz_8s6oxRyX",
 				"type": "block",
 				"position": {
-					"x": 200,
+					"x": 250,
 					"y": 20,
-					"w": 70,
-					"h": 30
+					"w": 60,
+					"h": 20
 				}
 			},
 			{

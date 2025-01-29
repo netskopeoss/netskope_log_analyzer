@@ -252,7 +252,7 @@
 						"width": 162
 					}
 				},
-				"count": 2000
+				"count": 4000
 			},
 			"dataSources": {
 				"primary": "ds_nwd5jErf"
@@ -368,7 +368,7 @@
 						"width": 60
 					}
 				},
-				"count": 1000
+				"count": 3000
 			},
 			"dataSources": {
 				"primary": "ds_WppUorFU_ds_nwd5jErf"
