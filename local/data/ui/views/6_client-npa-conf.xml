@@ -235,6 +235,17 @@
 				}
 			},
 			"name": "NPA No matching rule found"
+		},
+		"ds_Abg4QXZG_ds_p8PZ4Okn": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=npadebuglog \"search \"\n| rex field=_raw \"\\sList:\\s(?<SearchList>.*)\" \n| stats values(SearchList) as SearchList",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "DNS suffixes"
 		}
 	},
 	"visualizations": {
@@ -377,6 +388,37 @@
 			"containerOptions": {},
 			"showProgressBar": false,
 			"showLastUpdated": false
+		},
+		"viz_MPkFhAIS": {
+			"type": "splunk.table",
+			"options": {
+				"count": 500,
+				"dataOverlayMode": "none",
+				"drilldown": "none",
+				"showRowNumbers": false,
+				"showInternalFields": false,
+				"columnFormat": {
+					"Policy": {
+						"width": 87
+					},
+					"Publisher": {
+						"width": 72
+					},
+					"Action": {
+						"width": 60
+					},
+					"Use_Private_DNS": {
+						"width": 60
+					},
+					"Target": {
+						"width": 208
+					}
+				}
+			},
+			"dataSources": {
+				"primary": "ds_Abg4QXZG_ds_p8PZ4Okn"
+			},
+			"title": "DNS suffix"
 		}
 	},
 	"inputs": {
@@ -412,7 +454,7 @@
 				"type": "block",
 				"position": {
 					"x": 10,
-					"y": 1780,
+					"y": 2020,
 					"w": 1420,
 					"h": 1470
 				}
@@ -424,7 +466,7 @@
 					"x": 10,
 					"y": 10,
 					"w": 1420,
-					"h": 1750
+					"h": 1990
 				}
 			},
 			{
@@ -432,9 +474,9 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 500,
+					"y": 630,
 					"w": 1400,
-					"h": 580
+					"h": 690
 				}
 			},
 			{
@@ -442,7 +484,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 1830,
+					"y": 2070,
 					"w": 1400,
 					"h": 680
 				}
@@ -454,7 +496,7 @@
 					"x": 20,
 					"y": 50,
 					"w": 1400,
-					"h": 430
+					"h": 400
 				}
 			},
 			{
@@ -462,7 +504,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 1110,
+					"y": 1350,
 					"w": 1400,
 					"h": 640
 				}
@@ -472,9 +514,19 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 2520,
+					"y": 2760,
 					"w": 1400,
 					"h": 680
+				}
+			},
+			{
+				"item": "viz_MPkFhAIS",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 470,
+					"w": 1400,
+					"h": 140
 				}
 			}
 		],

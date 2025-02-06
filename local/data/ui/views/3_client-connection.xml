@@ -360,7 +360,7 @@
 		"ds_aHIqMkOi_ds_9ze5Vfw0": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog \"post client rtt\" \r\n\r\nearliest=[ search index=netskope_client1 host=\"$field1$\"  sourcetype=nsdebuglog \"post client rtt\" | stats min(_time) as earliest_time | return $earliest_time ]  \r\nlatest=[ search index=netskope_client1 host=\"$field1$\"  sourcetype=nsdebuglog \"post client rtt\"  | stats max(_time) as latest_time | return $latest_time ]\r\n\r\n| rex field=_raw \"\\[(?<Client>.*)\\]:\\spost\\sclient\\srtt\\spop\\:(?<PoP>.*)\\sip\\:(?<GatewayIP>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\srtt:(?<RTT>\\d+)\"\r\n| eval Dst=Client.\"_\".PoP.\"_\".GatewayIP\r\n| timechart span=15m max(RTT) by Dst",
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog \"post client rtt\" \r\n\r\nearliest=[ search index=netskope_client1 host=\"$field1$\"  sourcetype=nsdebuglog \"post client rtt\" | stats min(_time) as earliest_time | return $earliest_time ]  \r\nlatest=[ search index=netskope_client1 host=\"$field1$\"  sourcetype=nsdebuglog \"post client rtt\"  | stats max(_time) as latest_time | return $latest_time ]\r\n\r\n| rex field=_raw \"\\[(?<Client>.*)\\]:\\spost\\sclient\\srtt\\spop\\:(?<PoP>.*)\\sip\\:(?<GatewayIP>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\srtt:(?<RTT>\\d+)\"\r\n| eval Dst=Client.\"_\".PoP.\"_\".GatewayIP\r\n| timechart span=15m max(RTT) by Dst useother=false",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"
@@ -397,7 +397,7 @@
 			"dataSources": {
 				"primary": "ds_9ze5Vfw0"
 			},
-			"title": "GSLB RTT",
+			"title": "GSLB RTT avg",
 			"containerOptions": {},
 			"showProgressBar": false,
 			"showLastUpdated": false
@@ -607,7 +607,7 @@
 			"dataSources": {
 				"primary": "ds_2QlqO3sX_ds_FdRRg5Qz_ds_Cfo912F2_ds_ydLKTkRP_ds_ORP4wiSl_ds_YSgjGLGw_ds_mzmNhkaL_ds_v57DBEEj_ds_hLXoE9n0"
 			},
-			"title": "Tunnel was established via On-prem Proxy?",
+			"title": "How tunnel was connected?",
 			"containerOptions": {},
 			"showProgressBar": false,
 			"showLastUpdated": false,
@@ -679,7 +679,7 @@
 			"dataSources": {
 				"primary": "ds_aHIqMkOi_ds_9ze5Vfw0"
 			},
-			"title": "GSLB RTT",
+			"title": "GSLB RTT timechart",
 			"containerOptions": {},
 			"showProgressBar": false,
 			"showLastUpdated": false,

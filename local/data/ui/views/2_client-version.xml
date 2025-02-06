@@ -74,7 +74,7 @@
 		"ds_mJF3HiBv_ds_lmo8JfHa": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" (sourcetype=nsdebuglog OR sourcetype=stagentUI) \"Config new client version\" OR \"Config download path for client update\" OR \"Config trying to download\" OR \"client auto update\" OR \"starting =\" OR \"Config version json\" OR \"ready to be installed\" OR \"Did not statisfy\" OR \" UPDATE_AVAILABLE \" OR \"Failed to open msi\" OR \"Agent installer path\" OR \"Schedule upgrade\"\n| table _raw\n| sort _raw",
+				"query": "index=netskope_client1 host=\"$field1$\" (sourcetype=nsdebuglog OR sourcetype=stagentUI) \"Config new client version\" OR \"Config download path for client update\" OR \"Config trying to download\" OR \"client auto update\" OR \"starting =\" OR \"Config version json\" OR \"ready to be installed\" OR \"Did not statisfy\" OR \" UPDATE_AVAILABLE \" OR \"msi\" OR \"Agent installer path\" OR \"Schedule upgrade\"\n| table _raw\n| sort _raw",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"

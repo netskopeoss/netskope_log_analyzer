@@ -283,7 +283,7 @@
 		"ds_nmxlyfXa_ds_USxTAkrP_ds_9ze5Vfw0": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_json1 host=\"$field1$\" sourcetype=nsconfig source=\"*nssteering.json\"\n| eval 003_dynamic_steering_result = case(dynamic_steering == \"0\", \"disabled\", dynamic_steering == \"1\", \"enabled\", true(), \"Other\")\n| rename steering_config_name as 001_steering_config_name\n| rename traffic_mode as 002_traffic_mode\n| rename domain* as 003_domain* \n| rename domain_* as 004_domain_*\n| rename dynamic_steering as 005_dynamic_steering\n| rename firewall_traffic_mode as 006_firewall_traffic_mode\n| rename onprem_steering_method as 007_onprem_steering_method\n| rename offprem_steering_method as 008_offprem_steering_method\n| rename private_apps_* as 009_private_apps_*\n| table 00*\n| transpose",
+				"query": "index=netskope_json1 host=\"$field1$\" sourcetype=nsconfig source=\"*nssteering.json\"\n| eval 003_dynamic_steering_result = case(dynamic_steering == \"0\", \"disabled\", dynamic_steering == \"1\", \"enabled\", true(), \"Other\")\n| rename steering_config_name as 001_steering_config_name\n| rename traffic_mode as 002_traffic_mode\n| rename domain_* as tmp_domain_*\n| rename domain* as 003_domain* \n| rename dynamic_steering as 005_dynamic_steering\n| rename firewall_traffic_mode as 006_firewall_traffic_mode\n| rename onprem_steering_method as 007_onprem_steering_method\n| rename offprem_steering_method as 008_offprem_steering_method\n| rename private_apps_* as 009_private_apps_*\n| eval 004_Non_standard_port=mvzip('tmp_domain_ports{}.domains{}', 'tmp_domain_ports{}.ports{}', \" : \")\n| table 00*\n| transpose",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"
@@ -415,7 +415,7 @@
 		"ds_0fqPTVC5_ds_tFQJ5Y1y_ds_nyIc4PX7_ds_hQ3DTGtU": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog  sourcetype=nsdebuglog \"process:\"\n| rex field=_raw \".*process:\\s*(?<Process>[^\\s,]+)\"\n| stats values(Process) as Process ",
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog \"process:\"\n| rex field=_raw \"process:\\s*(?<Process>.*?)(?=(\\sfor|\\sto|,))\"\n| stats values(Process) as Process ",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"
@@ -784,7 +784,7 @@
 		"viz_JYWklRZN": {
 			"type": "splunk.markdown",
 			"options": {
-				"markdown": "### nsbypass.json",
+				"markdown": "### nsbypassed traffic",
 				"backgroundColor": "#708794",
 				"fontSize": "extraLarge"
 			}

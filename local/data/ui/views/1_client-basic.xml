@@ -257,6 +257,17 @@
 				}
 			},
 			"name": "Secure Enrollment - log"
+		},
+		"ds_wFzHnbfA_ds_KlkPVFOL_ds_9djM1het_ds_xh0scyrN_ds_3BW1BQjy": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_json1 source=\"*nsconfig.json\" AND NOT source=\"*prelogon_nsconfig.json\" host=\"$field1$\"\n| table logLevel",
+				"queryParameters": {
+					"earliest": "0",
+					"latest": ""
+				}
+			},
+			"name": "LogLevel"
 		}
 	},
 	"visualizations": {
@@ -579,6 +590,18 @@
 				"primary": "ds_lLndJSn9_ds_SyuP7lQA"
 			},
 			"title": "Secure enrollment - log"
+		},
+		"viz_CEXCR2o5": {
+			"type": "splunk.singlevalue",
+			"dataSources": {
+				"primary": "ds_wFzHnbfA_ds_KlkPVFOL_ds_9djM1het_ds_xh0scyrN_ds_3BW1BQjy"
+			},
+			"containerOptions": {
+				"visibility": {}
+			},
+			"title": "logLevel - nsconfig",
+			"showProgressBar": false,
+			"showLastUpdated": false
 		}
 	},
 	"inputs": {
@@ -606,7 +629,7 @@
 		"type": "absolute",
 		"options": {
 			"width": 1440,
-			"height": 3600
+			"height": 7200
 		},
 		"structure": [
 			{
@@ -614,7 +637,7 @@
 				"type": "block",
 				"position": {
 					"x": 10,
-					"y": 1470,
+					"y": 1690,
 					"w": 1420,
 					"h": 1400
 				}
@@ -626,7 +649,7 @@
 					"x": 10,
 					"y": 10,
 					"w": 1420,
-					"h": 630
+					"h": 850
 				}
 			},
 			{
@@ -634,7 +657,7 @@
 				"type": "block",
 				"position": {
 					"x": 10,
-					"y": 660,
+					"y": 880,
 					"w": 1420,
 					"h": 510
 				}
@@ -644,9 +667,9 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 60,
+					"y": 270,
 					"w": 1400,
-					"h": 180
+					"h": 190
 				}
 			},
 			{
@@ -654,7 +677,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 710,
+					"y": 930,
 					"w": 1400,
 					"h": 430
 				}
@@ -664,7 +687,7 @@
 				"type": "block",
 				"position": {
 					"x": 270,
-					"y": 670,
+					"y": 890,
 					"w": 30,
 					"h": 20
 				}
@@ -673,7 +696,7 @@
 				"item": "viz_8s6oxRyX",
 				"type": "block",
 				"position": {
-					"x": 250,
+					"x": 260,
 					"y": 20,
 					"w": 60,
 					"h": 20
@@ -684,7 +707,7 @@
 				"type": "block",
 				"position": {
 					"x": 10,
-					"y": 2890,
+					"y": 3110,
 					"w": 1420,
 					"h": 870
 				}
@@ -694,7 +717,7 @@
 				"type": "block",
 				"position": {
 					"x": 710,
-					"y": 3100,
+					"y": 3320,
 					"w": 700,
 					"h": 290
 				}
@@ -704,7 +727,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 2950,
+					"y": 3170,
 					"w": 670,
 					"h": 130
 				}
@@ -714,7 +737,7 @@
 				"type": "block",
 				"position": {
 					"x": 250,
-					"y": 2900,
+					"y": 3120,
 					"w": 40,
 					"h": 20
 				}
@@ -724,7 +747,7 @@
 				"type": "block",
 				"position": {
 					"x": 10,
-					"y": 1190,
+					"y": 1410,
 					"w": 690,
 					"h": 260
 				}
@@ -734,7 +757,7 @@
 				"type": "block",
 				"position": {
 					"x": 30,
-					"y": 1240,
+					"y": 1460,
 					"w": 640,
 					"h": 190
 				}
@@ -744,7 +767,7 @@
 				"type": "block",
 				"position": {
 					"x": 320,
-					"y": 1200,
+					"y": 1420,
 					"w": 20,
 					"h": 20
 				}
@@ -754,7 +777,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 250,
+					"y": 470,
 					"w": 1400,
 					"h": 370
 				}
@@ -764,7 +787,7 @@
 				"type": "block",
 				"position": {
 					"x": 720,
-					"y": 1190,
+					"y": 1410,
 					"w": 710,
 					"h": 260
 				}
@@ -774,7 +797,7 @@
 				"type": "block",
 				"position": {
 					"x": 740,
-					"y": 1240,
+					"y": 1460,
 					"w": 680,
 					"h": 190
 				}
@@ -784,7 +807,7 @@
 				"type": "block",
 				"position": {
 					"x": 710,
-					"y": 2950,
+					"y": 3170,
 					"w": 700,
 					"h": 130
 				}
@@ -794,7 +817,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 3100,
+					"y": 3320,
 					"w": 670,
 					"h": 290
 				}
@@ -804,7 +827,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 3410,
+					"y": 3630,
 					"w": 670,
 					"h": 320
 				}
@@ -814,7 +837,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 2470,
+					"y": 2690,
 					"w": 1400,
 					"h": 380
 				}
@@ -824,7 +847,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 2080,
+					"y": 2300,
 					"w": 1400,
 					"h": 380
 				}
@@ -834,7 +857,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 1710,
+					"y": 1930,
 					"w": 1400,
 					"h": 360
 				}
@@ -844,7 +867,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 1510,
+					"y": 1730,
 					"w": 680,
 					"h": 190
 				}
@@ -854,9 +877,19 @@
 				"type": "block",
 				"position": {
 					"x": 720,
-					"y": 1510,
+					"y": 1730,
 					"w": 700,
 					"h": 190
+				}
+			},
+			{
+				"item": "viz_CEXCR2o5",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 70,
+					"w": 630,
+					"h": 170
 				}
 			}
 		],
