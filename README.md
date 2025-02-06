@@ -21,6 +21,8 @@ We recommend setting up and using a separate Splunk server from the production e
 * netskope_publisher1
 * netskope_csv1
 
+### Installation
+
  1. Please create a folder at the following location. Splunk will monitor this folder and start indexing logs as soon as it detects client log folder.
 
     ```sh
@@ -42,3 +44,7 @@ We recommend setting up and using a separate Splunk server from the production e
     The data will be displayed on the dashboard.Tabs are organized by functionality. Open each tab in a new browser tab and repeat the steps above.
 
     ![Log Analyzer image](static/Dashboard2.PNG)
+
+### License
+
+See LICENSE for more information
