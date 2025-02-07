@@ -29,10 +29,18 @@ We recommend setting up and using a separate Splunk server from the production e
 
  2. Place the Add-on folder in the Splunk apps directory.
 
+    For Linux user:
     ```sh
     cd /opt/splunk/etc/apps/
     git clone https://github.com/netskopeoss/netskope_log_analyzer.git
     ```
+
+    For Mac user:
+    ```sh
+    cd /Applications/Splunk/etc/apps
+    git clone https://github.com/netskopeoss/netskope_log_analyzer.git
+    ```
+
 
  3. Extract the Netskope log bundle and upload it to /var/log/splunk/logs. Splunk will detect the logs and start indexing them.
     
