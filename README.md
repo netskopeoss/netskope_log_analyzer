@@ -2,18 +2,15 @@
 
 ![Log Analyzer image](static/Dashboard.PNG)
 
-We have received feedback that Netskope logs are written for developers, making it difficult for users and partners supporting them to understand the situation.
-To address this, we provide a clear visualization of key information, such as configured settings, which PoP the client connected to, and how traffic was handled, using graphs and tables.
-We hope this will be helpful for troubleshooting.
+We've received feedback that Netskope logs are primarily written for developers, making them challenging for users and support teams to interpret. To address this, this tool provides a clear visualisation of key information—such as configured settings, the PoP the client connected to, and how traffic was handled—through intuitive graphs and tables. We hope this will be helpful for troubleshooting.
 
 ## Getting Started
 
-This add-on has been confirmed to work on both Linux and Mac.
-When running it on a Mac, please download the Intel version of the Splunk installer and run it using Rosetta. Follow the installation instructions provided by macOS and Splunk.
+This add-on works on both Linux and Mac. For Mac users, please download the Intel version of the Splunk installer and run it using Rosetta. Follow the installation instructions provided by macOS and Splunk.
 
 ### Note:
 
-This add-on creates the following indexes and stores log data in them.
+This add-on creates the following indexes on the Splunk server and stores log data in them.
 We recommend setting up and using a separate Splunk server from the production environment.
 
 * netskope_client1
