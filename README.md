@@ -41,11 +41,13 @@ We recommend setting up and using a separate Splunk server from the production e
     git clone https://github.com/netskopeoss/netskope_log_analyzer.git
     ```
 
+ 3. Please restart Splunk to enable the add-on.
 
- 3. Extract the Netskope log bundle and upload it to /var/log/splunk/logs. Splunk will detect the logs and start indexing them.
+
+ 4. Extract the Netskope log bundle and upload it to /var/log/splunk/logs. Splunk will detect the logs and start indexing them.
     
 
- 4. Access the dashboard(http://Splunk server's IP address:8000/en-GB/app/netskope_log_analyzer/) and select the log folder name from the dropdown menu.
+ 5. Access the dashboard(http:// Your Splunk server's IP address:8000/en-GB/app/netskope_log_analyzer/) and select the log folder name from the dropdown menu.
     The data will be displayed on the dashboard.Tabs are organized by functionality. Open each tab in a new browser tab and repeat the steps above.
 
     ![Log Analyzer image](static/Dashboard2.PNG)
