@@ -19,13 +19,13 @@
 		"ds_hQ3DTGtU": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"nsdebuglog\" \"detectClientLocation\" \n| rex field=_raw \"(?<MSG>Location:\\s.*)\"\n| timechart  count by MSG\n| appendcols [ search index=netskope_client1 host=\"$field1$\" sourcetype=\"nsdebuglog\" \"BypassAppMgr Bypassing connection by tunneling from process\"\n| rex field=_raw \"BypassAppMgr\\s(?<MSG1>.*process)\"\n| timechart count by MSG1 ]",
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"nsdebuglog\" \"Bypassing\" AND \"tunneling\"  \n\nearliest=[ search index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog | stats min(_time) as earliest_time | return $earliest_time ]  \nlatest=[ search index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog | stats max(_time) as latest_time | return $latest_time ]\n\n| rex field=_raw \"process:\\s*(?<Process>.*?)(?=(\\sfor|\\sto|,))\"\n| timechart count by Process useother=false",
 				"queryParameters": {
-					"earliest": "0",
-					"latest": "now"
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
 				}
 			},
-			"name": "onprem status vs tunnel bypassed traffic"
+			"name": "Tunnel bypassed traffic"
 		},
 		"ds_IBqh7Cpp": {
 			"type": "ds.search",
@@ -316,10 +316,10 @@
 		"ds_nyIc4PX7_ds_hQ3DTGtU": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog CTunnelMgr AND (\"trying Client on-prem detection\" OR \"dynamic steering enhancement\" OR \"On-prem status\")\n| rex field=_raw \"(?<LogTime>\\d{4}\\/\\d{2}\\/\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*CTunnelMgr\\s(?<MSG>.*)\"\n| table LogTime, MSG",
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog  CTunnelMgr AND (\"on-prem\" OR \"detectClientLocation\")\n| rex field=_raw \"(?<LogTime>\\d{4}\\/\\d{2}\\/\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*CTunnelMgr\\s(?<MSG>.*)\"\n| table LogTime, MSG\n| sort LogTime",
 				"queryParameters": {
-					"earliest": "0",
-					"latest": "now"
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
 				}
 			},
 			"name": "Onprem check log"
@@ -433,6 +433,17 @@
 				}
 			},
 			"name": "nsbypass - process"
+		},
+		"ds_Cspa5X5s_ds_nyIc4PX7_ds_hQ3DTGtU": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog  \"location is\"\n| rex field=_raw \"(?<LogTime>\\d{4}\\/\\d{2}\\/\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*location\\sis\\s(?<Location>.*)\\sand\\straffic\\smode\\sis\\s(?<TrafficMode>.*),\\sDNS\\s(?<DNS>.*)\"\n| eval TrafficMode = case(\n    TrafficMode == 0, \"0 ‘CloudAppOnly mode for On-Prem and ‘web’/'all' mode for Off-Prem. if firewall_traffic_mode is ‘all’, ‘all’ mode is used for Off-Prem. if firewall_traffic_mode is not ‘all’, ‘web’ mode is used for Off-Prem;\",\n    TrafficMode == 1, \"1 CloudAppOnly\",\n    TrafficMode == 2, \"2 All Web\",\n    TrafficMode== 3, \"3 All traffic\",\n    true(), \"NA\"\n)\n| table LogTime,Location, TrafficMode, DNS\n| sort LogTime",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "DynamicSteering1"
 		}
 	},
 	"visualizations": {
@@ -453,31 +464,16 @@
 		"viz_BQPdbt1a": {
 			"type": "splunk.column",
 			"options": {
-				"yAxisAbbreviation": "auto",
-				"y2AxisAbbreviation": "auto",
-				"showRoundedY2AxisLabels": false,
-				"legendTruncation": "ellipsisMiddle",
-				"showY2MajorGridLines": true,
-				"xAxisLabelRotation": 0,
-				"xAxisTitleVisibility": "show",
-				"yAxisTitleVisibility": "show",
-				"y2AxisTitleVisibility": "show",
-				"yAxisScale": "linear",
-				"showOverlayY2Axis": false,
-				"y2AxisScale": "inherit",
-				"overlayFields": [
-					"\"Bypassing connection by tunneling from process\""
-				],
-				"dataValuesDisplay": "off",
-				"stackMode": "auto",
-				"showSplitSeries": false,
-				"showIndependentYRanges": false,
+				"stackMode": "stacked",
 				"legendDisplay": "bottom"
 			},
 			"dataSources": {
 				"primary": "ds_hQ3DTGtU"
 			},
-			"title": "onprem status vs tunnel bypassed traffic"
+			"title": "Ttunnel bypassed traffic",
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false
 		},
 		"viz_UOKGClkL": {
 			"type": "splunk.markdown",
@@ -498,7 +494,8 @@
 			"showLastUpdated": false,
 			"options": {
 				"count": 200
-			}
+			},
+			"description": "This information might not be accurate if Dynamic Steering is enabled."
 		},
 		"viz_sfVd5jAP": {
 			"type": "splunk.table",
@@ -563,12 +560,12 @@
 			"showProgressBar": false,
 			"showLastUpdated": false,
 			"options": {
-				"count": 100,
 				"columnFormat": {
 					"LogTime": {
 						"width": 60
 					}
-				}
+				},
+				"count": 1000
 			}
 		},
 		"viz_kWeWWmHq": {
@@ -788,6 +785,24 @@
 				"backgroundColor": "#708794",
 				"fontSize": "extraLarge"
 			}
+		},
+		"viz_Jj2IOc2j": {
+			"type": "splunk.table",
+			"dataSources": {
+				"primary": "ds_Cspa5X5s_ds_nyIc4PX7_ds_hQ3DTGtU"
+			},
+			"title": "Onprem check log",
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false,
+			"options": {
+				"columnFormat": {
+					"LogTime": {
+						"width": 60
+					}
+				},
+				"count": 1000
+			}
 		}
 	},
 	"inputs": {
@@ -823,7 +838,7 @@
 				"type": "block",
 				"position": {
 					"x": 10,
-					"y": 5870,
+					"y": 6310,
 					"w": 1420,
 					"h": 970
 				}
@@ -833,7 +848,7 @@
 				"type": "block",
 				"position": {
 					"x": 10,
-					"y": 5010,
+					"y": 5450,
 					"w": 1420,
 					"h": 850
 				}
@@ -845,7 +860,7 @@
 					"x": 10,
 					"y": 10,
 					"w": 1420,
-					"h": 1710
+					"h": 1700
 				}
 			},
 			{
@@ -853,7 +868,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 970,
+					"y": 960,
 					"w": 1400,
 					"h": 330
 				}
@@ -873,9 +888,9 @@
 				"type": "block",
 				"position": {
 					"x": 10,
-					"y": 1730,
+					"y": 1720,
 					"w": 1420,
-					"h": 1310
+					"h": 1760
 				}
 			},
 			{
@@ -883,7 +898,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 730,
+					"y": 720,
 					"w": 1400,
 					"h": 230
 				}
@@ -893,7 +908,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 1770,
+					"y": 1760,
 					"w": 1400,
 					"h": 410
 				}
@@ -903,7 +918,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 60,
+					"y": 50,
 					"w": 1400,
 					"h": 660
 				}
@@ -913,7 +928,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 2640,
+					"y": 3080,
 					"w": 1400,
 					"h": 380
 				}
@@ -923,7 +938,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 2200,
+					"y": 2190,
 					"w": 1400,
 					"h": 420
 				}
@@ -933,7 +948,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 1310,
+					"y": 1300,
 					"w": 1400,
 					"h": 400
 				}
@@ -943,7 +958,7 @@
 				"type": "block",
 				"position": {
 					"x": 10,
-					"y": 3050,
+					"y": 3490,
 					"w": 1420,
 					"h": 1120
 				}
@@ -953,7 +968,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 3360,
+					"y": 3800,
 					"w": 1400,
 					"h": 390
 				}
@@ -963,7 +978,7 @@
 				"type": "block",
 				"position": {
 					"x": 10,
-					"y": 4180,
+					"y": 4620,
 					"w": 1420,
 					"h": 810
 				}
@@ -973,7 +988,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 4590,
+					"y": 5030,
 					"w": 690,
 					"h": 380
 				}
@@ -983,7 +998,7 @@
 				"type": "block",
 				"position": {
 					"x": 720,
-					"y": 4590,
+					"y": 5030,
 					"w": 700,
 					"h": 380
 				}
@@ -993,7 +1008,7 @@
 				"type": "block",
 				"position": {
 					"x": 720,
-					"y": 4220,
+					"y": 4660,
 					"w": 700,
 					"h": 350
 				}
@@ -1003,7 +1018,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 4220,
+					"y": 4660,
 					"w": 690,
 					"h": 350
 				}
@@ -1013,7 +1028,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 5910,
+					"y": 6350,
 					"w": 1400,
 					"h": 380
 				}
@@ -1023,7 +1038,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 3760,
+					"y": 4200,
 					"w": 1400,
 					"h": 400
 				}
@@ -1033,7 +1048,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 6310,
+					"y": 6750,
 					"w": 1400,
 					"h": 510
 				}
@@ -1043,7 +1058,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 3090,
+					"y": 3530,
 					"w": 1400,
 					"h": 260
 				}
@@ -1053,9 +1068,19 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 5060,
+					"y": 5500,
 					"w": 1400,
 					"h": 780
+				}
+			},
+			{
+				"item": "viz_Jj2IOc2j",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 2620,
+					"w": 1400,
+					"h": 420
 				}
 			}
 		],
