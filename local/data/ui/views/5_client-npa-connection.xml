@@ -377,7 +377,10 @@
 			"title": "GSLB RTT",
 			"containerOptions": {},
 			"showProgressBar": false,
-			"showLastUpdated": false
+			"showLastUpdated": false,
+			"options": {
+				"legendDisplay": "bottom"
+			}
 		},
 		"viz_pFWd9BS1": {
 			"type": "splunk.pie",
