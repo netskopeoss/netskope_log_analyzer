@@ -217,7 +217,7 @@
 		"ds_HvnIp6ON_ds_LASvWJH6_ds_nPQ7im1n_ds_xwxresdO": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" \"nsEnrollmentToken.cpp\" OR \"prelogon.netskope.com\" OR \"PrelogonConfig.cpp\" OR \"enrollment\"\n| rex field=_raw \"(?<LogTime>\\d{4}[-|\\/]\\d{2}[-|\\/]\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*cpp:\\d+\\s+(?<MSG>.*)\"\n| table LogTime, MSG\n| sort LogTime",
+				"query": "index=netskope_client1 host=\"$field1$\" \"nsEnrollmentToken.cpp\" OR \"prelogon.netskope.com\" OR \"PrelogonConfig.cpp\" OR \"enrollment\" OR \"auth\" OR \"TOKEN\"\n| rex field=_raw \"(?<LogTime>\\d{4}[-|\\/]\\d{2}[-|\\/]\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*cpp:\\d+\\s+(?<MSG>.*)\"\n| table LogTime, MSG\n| sort LogTime",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"
@@ -528,7 +528,7 @@
 		"viz_rhzcrSTR": {
 			"type": "splunk.table",
 			"options": {
-				"count": 500,
+				"count": 1500,
 				"dataOverlayMode": "none",
 				"drilldown": "none",
 				"showRowNumbers": false,

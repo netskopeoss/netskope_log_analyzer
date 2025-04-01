@@ -367,6 +367,39 @@
 				}
 			},
 			"name": "GSLB RTT timechart"
+		},
+		"ds_DwRhkHre_ds_93ffU7nk_ds_FdRRg5Qz_ds_Cfo912F2_ds_ydLKTkRP_ds_ORP4wiSl_ds_YSgjGLGw_ds_mzmNhkaL_ds_v57DBEEj_ds_hLXoE9n0": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"nsdebuglog\"  \"Primary tunnel source IP\"\n| rex field=_raw \"source\\sIP:\\s(?<Source>.*)\\sPrimary\\stunnel\\sdest\\sIP:\\s(?<Dst>.*)\" \n| eval Source-Dst=\"Tunnel source IP: \".Source.\" Dst IP: \".Dst\n| stats values(Source-Dst) as Source-Dst",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "Tunnel souce copy 1"
+		},
+		"ds_qzdgBBc5_ds_9ze5Vfw0": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\"  sourcetype=nsdebuglog \"post client rtt\" AND \"NSClient\"\n| rex field=_raw \"\\[(?<Client>.*)\\]:\\spost\\sclient\\srtt\\spop\\:(?<PoP>.*)\\sip\\:(?<GatewayIP>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\srtt:(?<RTT>\\d+)\"\n| eval Dst=Client.\"_\".PoP.\"_\".GatewayIP\n| stats avg(RTT) as AvgRTT by Dst\n| eval AvgRTT=round(AvgRTT, 2)\n| sort AvgRTT, Dst",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "GSLB RTT copy 1"
+		},
+		"ds_2MBJhmlv_ds_aHIqMkOi_ds_9ze5Vfw0": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog \"ordered POPs not modified\"\r\n\r\nearliest=[ search index=netskope_client1 host=\"$field1$\"  sourcetype=nsdebuglog \"ordered POPs not modified\" | stats min(_time) as earliest_time | return $earliest_time ]  \r\nlatest=[ search index=netskope_client1 host=\"$field1$\"  sourcetype=nsdebuglog \"ordered POPs not modified\"  | stats max(_time) as latest_time | return $latest_time ]\r\n\r\n| rex field=_raw \"(?<LogTime>\\d{4}\\/\\d{2}\\/\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*curPop:(?<curPop>.*)\"\r\n| eval _time=strptime(LogTime, \"%Y/%m/%d %H:%M:%S.%3N\")\r\n| timechart count by curPop useother=false",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "GSLB curPop"
 		}
 	},
 	"visualizations": {
@@ -541,7 +574,7 @@
 			"showProgressBar": false,
 			"showLastUpdated": false,
 			"options": {
-				"count": 2000
+				"count": 3000
 			}
 		},
 		"viz_gXvdPfFZ": {
@@ -690,6 +723,37 @@
 				"legendDisplay": "bottom",
 				"stackMode": "stacked"
 			}
+		},
+		"viz_t8n0F7nG": {
+			"type": "splunk.table",
+			"dataSources": {
+				"primary": "ds_DwRhkHre_ds_93ffU7nk_ds_FdRRg5Qz_ds_Cfo912F2_ds_ydLKTkRP_ds_ORP4wiSl_ds_YSgjGLGw_ds_mzmNhkaL_ds_v57DBEEj_ds_hLXoE9n0"
+			},
+			"title": "Tunnel source",
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false,
+			"options": {
+				"columnFormat": {
+					"_time": {
+						"width": 60
+					}
+				}
+			}
+		},
+		"viz_eeJZoqLr": {
+			"type": "splunk.area",
+			"dataSources": {
+				"primary": "ds_2MBJhmlv_ds_aHIqMkOi_ds_9ze5Vfw0"
+			},
+			"title": "GSLB curPop",
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false,
+			"options": {
+				"legendDisplay": "bottom",
+				"stackMode": "stacked100"
+			}
 		}
 	},
 	"inputs": {
@@ -725,7 +789,7 @@
 				"type": "block",
 				"position": {
 					"x": 10,
-					"y": 2070,
+					"y": 2340,
 					"w": 1420,
 					"h": 870
 				}
@@ -737,7 +801,7 @@
 					"x": 10,
 					"y": 10,
 					"w": 1420,
-					"h": 2050
+					"h": 2320
 				}
 			},
 			{
@@ -745,9 +809,9 @@
 				"type": "block",
 				"position": {
 					"x": 10,
-					"y": 2950,
+					"y": 3220,
 					"w": 1420,
-					"h": 1740
+					"h": 2070
 				}
 			},
 			{
@@ -755,7 +819,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 3780,
+					"y": 4050,
 					"w": 1400,
 					"h": 440
 				}
@@ -765,7 +829,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 970,
+					"y": 980,
 					"w": 1400,
 					"h": 230
 				}
@@ -785,7 +849,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 1210,
+					"y": 1220,
 					"w": 1400,
 					"h": 230
 				}
@@ -795,7 +859,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 2670,
+					"y": 2940,
 					"w": 1400,
 					"h": 260
 				}
@@ -804,7 +868,7 @@
 				"item": "viz_BlwX4Azv",
 				"type": "block",
 				"position": {
-					"x": 340,
+					"x": 320,
 					"y": 20,
 					"w": 70,
 					"h": 20
@@ -825,7 +889,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 2990,
+					"y": 3260,
 					"w": 1400,
 					"h": 380
 				}
@@ -835,7 +899,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 2400,
+					"y": 2670,
 					"w": 1400,
 					"h": 260
 				}
@@ -845,7 +909,7 @@
 				"type": "block",
 				"position": {
 					"x": 10,
-					"y": 4700,
+					"y": 5300,
 					"w": 1420,
 					"h": 1640
 				}
@@ -855,7 +919,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 2110,
+					"y": 2380,
 					"w": 1400,
 					"h": 280
 				}
@@ -865,7 +929,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 4740,
+					"y": 5740,
 					"w": 1400,
 					"h": 390
 				}
@@ -875,7 +939,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 5150,
+					"y": 5350,
 					"w": 1400,
 					"h": 380
 				}
@@ -885,7 +949,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 5550,
+					"y": 6150,
 					"w": 1400,
 					"h": 380
 				}
@@ -895,7 +959,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 5950,
+					"y": 6550,
 					"w": 1400,
 					"h": 360
 				}
@@ -905,7 +969,7 @@
 				"type": "block",
 				"position": {
 					"x": 10,
-					"y": 6361,
+					"y": 6961,
 					"w": 1420,
 					"h": 819
 				}
@@ -915,7 +979,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 6410,
+					"y": 7010,
 					"w": 1400,
 					"h": 350
 				}
@@ -925,7 +989,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 1710,
+					"y": 1980,
 					"w": 1400,
 					"h": 340
 				}
@@ -935,7 +999,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 6780,
+					"y": 7380,
 					"w": 1400,
 					"h": 340
 				}
@@ -945,7 +1009,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 3380,
+					"y": 3650,
 					"w": 1400,
 					"h": 390
 				}
@@ -955,7 +1019,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 1450,
+					"y": 1720,
 					"w": 1400,
 					"h": 250
 				}
@@ -965,7 +1029,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 730,
+					"y": 740,
 					"w": 1400,
 					"h": 230
 				}
@@ -975,9 +1039,29 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 4240,
+					"y": 4500,
 					"w": 1400,
-					"h": 440
+					"h": 360
+				}
+			},
+			{
+				"item": "viz_t8n0F7nG",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 1460,
+					"w": 1400,
+					"h": 250
+				}
+			},
+			{
+				"item": "viz_eeJZoqLr",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 4870,
+					"w": 1400,
+					"h": 410
 				}
 			}
 		],

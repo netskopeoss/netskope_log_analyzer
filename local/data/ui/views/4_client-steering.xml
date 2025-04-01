@@ -316,7 +316,7 @@
 		"ds_nyIc4PX7_ds_hQ3DTGtU": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog  CTunnelMgr AND (\"on-prem\" OR \"detectClientLocation\")\n| rex field=_raw \"(?<LogTime>\\d{4}\\/\\d{2}\\/\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*CTunnelMgr\\s(?<MSG>.*)\"\n| table LogTime, MSG\n| sort LogTime",
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog    \"dynamic steering enhancement\" OR \"detectClientLocation\" OR \" On-prem\"\n| rex field=_raw \"(?<LogTime>\\d{4}\\/\\d{2}\\/\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*cpp.\\d+\\s(?<MSG>.*)\"\n| table LogTime, MSG\n| sort LogTime",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"
