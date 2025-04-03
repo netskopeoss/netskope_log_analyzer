@@ -408,13 +408,13 @@
 			"dataSources": {
 				"primary": "ds_hLXoE9n0"
 			},
-			"title": "Timechart",
+			"title": "Connected PoP Timechart",
 			"containerOptions": {},
 			"showProgressBar": false,
 			"showLastUpdated": false,
 			"options": {
 				"legendDisplay": "bottom",
-				"stackMode": "stacked"
+				"stackMode": "stacked100"
 			}
 		},
 		"viz_UOKGClkL": {
@@ -742,7 +742,7 @@
 			}
 		},
 		"viz_eeJZoqLr": {
-			"type": "splunk.area",
+			"type": "splunk.column",
 			"dataSources": {
 				"primary": "ds_2MBJhmlv_ds_aHIqMkOi_ds_9ze5Vfw0"
 			},
@@ -751,8 +751,7 @@
 			"showProgressBar": false,
 			"showLastUpdated": false,
 			"options": {
-				"legendDisplay": "bottom",
-				"stackMode": "stacked100"
+				"legendDisplay": "bottom"
 			}
 		}
 	},
