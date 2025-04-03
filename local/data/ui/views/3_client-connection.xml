@@ -715,7 +715,7 @@
 			"dataSources": {
 				"primary": "ds_aHIqMkOi_ds_9ze5Vfw0"
 			},
-			"title": "GSLB RTT timechart",
+			"title": "GSLB RTT Timechart",
 			"containerOptions": {},
 			"showProgressBar": false,
 			"showLastUpdated": false,

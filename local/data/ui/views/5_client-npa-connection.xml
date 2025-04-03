@@ -723,12 +723,13 @@
 			"dataSources": {
 				"primary": "ds_DobnpawB_ds_9ze5Vfw0"
 			},
-			"title": "GSLB RTT",
+			"title": "GSLB RTT Timechart",
 			"containerOptions": {},
 			"showProgressBar": false,
 			"showLastUpdated": false,
 			"options": {
-				"legendDisplay": "bottom"
+				"legendDisplay": "bottom",
+				"stackMode": "stacked"
 			}
 		},
 		"viz_zKuLxQ2b": {
