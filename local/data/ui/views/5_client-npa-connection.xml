@@ -5,6 +5,17 @@
     <definition><![CDATA[
 {
 	"dataSources": {
+		"ds_7JQOWjZh": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1  host=\"$field1$\"   sourcetype=\"npadebuglog\" \"NPAGW\" AND \"RETRANS\"\n\nearliest=[ search index=netskope_client1  host=\"$field1$\" sourcetype=\"npadebuglog\" \"NPAGW\" AND \"RETRANS\" | stats min(_time) as earliest_time | return $$earliest_time ]  \nlatest=[ search index=netskope_client1  host=\"$field1$\"  sourcetype=\"npadebuglog\" \"NPAGW\" AND \"RETRANS\" | stats max(_time) as latest_time | return $$latest_time ]\n\n| rex \"NPAGW\\s(?<NPAGW>\\d+\\.\\d+\\.\\d+\\.\\d+): RETRANS:(?<RETRANS>\\d+)/(?<TOTAL>\\d+).*?RTT:(?<RTT>\\d+)ms\"\n| timechart span=30m avg(RETRANS) as RETRANS avg(TOTAL) as TOTAL  useother=false",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "NPA RETRANS"
+		},
 		"ds_nwd5jErf": {
 			"type": "ds.search",
 			"options": {
@@ -30,7 +41,7 @@
 		"ds_hLXoE9n0": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" \"TLS client established connection\" OR \"NPA Tunnel Status: Connected\"\n\nearliest=[ search index=netskope_client1 host=\"$field1$\"  | stats min(_time) as earliest_time | return $earliest_time ]  \nlatest=[ search index=netskope_client1 host=\"$field1$\"  | stats max(_time) as latest_time | return $latest_time ]\n\n| rex field=_raw \"(?<NPA_GW>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\"\n| timechart count by NPA_GW",
+				"query": "index=netskope_client1 host=\"$field1$\" \"TLS client established connection\" OR \"NPA Tunnel Status: Connected\"\n\nearliest=[ search index=netskope_client1 host=\"$field1$\" \"TLS client established connection\" OR \"NPA Tunnel Status: Connected\" | stats min(_time) as earliest_time | return $earliest_time ]  \nlatest=[ search index=netskope_client1 host=\"$field1$\" \"TLS client established connection\" OR \"NPA Tunnel Status: Connected\" | stats max(_time) as latest_time | return $latest_time ]\n\n| rex field=_raw \"(?<NPA_GW>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\"\n| timechart span=1h count by NPA_GW useother=false",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"
@@ -327,7 +338,7 @@
 		"ds_DobnpawB_ds_9ze5Vfw0": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog \"post client rtt\" AND npa\r\n\r\nearliest=[ search index=netskope_client1 host=\"$field1$\"  sourcetype=nsdebuglog \"post client rtt\" AND npa | stats min(_time) as earliest_time | return $earliest_time ]  \r\nlatest=[ search index=netskope_client1 host=\"$field1$\"  sourcetype=nsdebuglog \"post client rtt\"  AND npa | stats max(_time) as latest_time | return $latest_time ]\r\n\r\n| rex field=_raw \"\\[(?<Client>.*)\\]:\\spost\\sclient\\srtt\\spop\\:(?<PoP>.*)\\sip\\:(?<GatewayIP>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\srtt:(?<RTT>\\d+)\"\r\n| eval Dst=Client.\"_\".PoP.\"_\".GatewayIP\r\n| timechart span=15m max(RTT) by Dst",
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog \"post client rtt\" AND npa\r\n\r\nearliest=[ search index=netskope_client1 host=\"$field1$\"  sourcetype=nsdebuglog \"post client rtt\" AND npa | stats min(_time) as earliest_time | return $earliest_time ]  \r\nlatest=[ search index=netskope_client1 host=\"$field1$\"  sourcetype=nsdebuglog \"post client rtt\"  AND npa | stats max(_time) as latest_time | return $latest_time ]\r\n\r\n| rex field=_raw \"\\[(?<Client>.*)\\]:\\spost\\sclient\\srtt\\spop\\:(?<PoP>.*)\\sip\\:(?<GatewayIP>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\srtt:(?<RTT>\\d+)\"\r\n| eval Dst=Client.\"_\".PoP.\"_\".GatewayIP\r\n| timechart span=15m max(RTT) by Dst  useother=false",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"
@@ -345,9 +356,59 @@
 				}
 			},
 			"name": "Next re-auth prompt"
+		},
+		"ds_MvvILDzy_ds_DobnpawB_ds_9ze5Vfw0": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\"  sourcetype=\"npadebuglog\" \"NPAGW\" AND \"RETRANS\"\r\n\r\nearliest=[ search index=netskope_client1 host=\"$field1$\" sourcetype=\"npadebuglog\" \"NPAGW\" AND \"RETRANS\" | stats min(_time) as earliest_time | return $earliest_time ]  \r\nlatest=[ search index=netskope_client1 host=\"$field1$\" sourcetype=\"npadebuglog\" \"NPAGW\" AND \"RETRANS\" | stats max(_time) as latest_time | return $latest_time ]\r\n\r\n| rex \"NPAGW\\s(?<NPAGW>\\d+\\.\\d+\\.\\d+\\.\\d+): RETRANS:(?<RETRANS>\\d+)/(?<TOTAL>\\d+).*?RTT:(?<RTT>\\d+)ms\"\r\n| timechart span=5m avg(RETRANS) as RETRANSE avg(TOTAL) as TOTAL  useother=false\r\n\r\n",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "NPA RETRANS RTT"
+		},
+		"ds_gxcWJCPD_ds_MvvILDzy_ds_DobnpawB_ds_9ze5Vfw0": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\"  sourcetype=\"npadebuglog\" \"NPAGW\" AND \"RETRANS\"\r\n\r\nearliest=[ search index=netskope_client1 host=\"$field1$\" sourcetype=\"npadebuglog\" \"NPAGW\" AND \"RETRANS\" | stats min(_time) as earliest_time | return $earliest_time ]  \r\nlatest=[ search index=netskope_client1 host=\"$field1$\" sourcetype=\"npadebuglog\" \"NPAGW\" AND \"RETRANS\" | stats max(_time) as latest_time | return $latest_time ]\r\n\r\n| rex \"NPAGW\\s(?<NPAGW>\\d+\\.\\d+\\.\\d+\\.\\d+): RETRANS:(?<RETRANS>\\d+)/.*?RTT:(?<RTT>\\d+)ms\"\r\n| timechart span=5m avg(RTT) as RTT by NPAGW useother=false",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "NPA RETRANS RTT copy 1"
 		}
 	},
 	"visualizations": {
+		"viz_WYpR7WwS": {
+			"type": "splunk.column",
+			"options": {
+				"yAxisAbbreviation": "auto",
+				"y2AxisAbbreviation": "auto",
+				"showRoundedY2AxisLabels": false,
+				"legendTruncation": "ellipsisMiddle",
+				"showY2MajorGridLines": true,
+				"xAxisLabelRotation": 0,
+				"xAxisTitleVisibility": "show",
+				"yAxisTitleVisibility": "show",
+				"yAxisScale": "log",
+				"overlayFields": [
+					"RETRANS"
+				],
+				"stackMode": "auto",
+				"showSplitSeries": false,
+				"showIndependentYRanges": false,
+				"legendDisplay": "bottom",
+				"yAxisTitleText": "TOTAL",
+				"y2AxisTitleText": "RTT",
+				"y2AxisTitleVisibility": "hide"
+			},
+			"dataSources": {
+				"primary": "ds_7JQOWjZh"
+			},
+			"title": "NPA RETRANS"
+		},
 		"viz_zI6AvR56": {
 			"type": "splunk.column",
 			"dataSources": {
@@ -358,6 +419,7 @@
 			"showProgressBar": false,
 			"showLastUpdated": false,
 			"options": {
+				"stackMode": "stacked100",
 				"legendDisplay": "bottom"
 			}
 		},
@@ -393,7 +455,7 @@
 			"showLastUpdated": false
 		},
 		"viz_sfVd5jAP": {
-			"type": "splunk.column",
+			"type": "splunk.area",
 			"dataSources": {
 				"primary": "ds_USxTAkrP_ds_9ze5Vfw0"
 			},
@@ -403,8 +465,10 @@
 			"showLastUpdated": false,
 			"options": {
 				"legendDisplay": "bottom",
-				"yAxisScale": "log",
-				"stackMode": "stacked"
+				"xAxisTitleText": "",
+				"xAxisMajorTickVisibility": "show",
+				"xAxisTitleVisibility": "hide",
+				"yAxisTitleText": "RTT"
 			}
 		},
 		"viz_E52xk4if": {
@@ -530,13 +594,13 @@
 						"width": 87
 					},
 					"device.client_version": {
-						"width": 100
+						"width": 110
 					},
 					"npa_srpv2": {
 						"width": 60
 					},
 					"user_email": {
-						"width": 275
+						"width": 240
 					},
 					"LogTime": {
 						"width": 207
@@ -664,8 +728,7 @@
 			"showProgressBar": false,
 			"showLastUpdated": false,
 			"options": {
-				"legendDisplay": "bottom",
-				"stackMode": "stacked"
+				"legendDisplay": "bottom"
 			}
 		},
 		"viz_zKuLxQ2b": {
@@ -731,9 +794,9 @@
 				"type": "block",
 				"position": {
 					"x": 10,
-					"y": 4680,
+					"y": 5200,
 					"w": 1420,
-					"h": 2160
+					"h": 2070
 				}
 			},
 			{
@@ -743,7 +806,7 @@
 					"x": 10,
 					"y": 3280,
 					"w": 1420,
-					"h": 1390
+					"h": 1900
 				}
 			},
 			{
@@ -751,8 +814,8 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 5950,
-					"w": 1390,
+					"y": 6460,
+					"w": 1400,
 					"h": 390
 				}
 			},
@@ -783,7 +846,7 @@
 					"x": 20,
 					"y": 4440,
 					"w": 1400,
-					"h": 220
+					"h": 380
 				}
 			},
 			{
@@ -791,7 +854,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 5280,
+					"y": 5790,
 					"w": 1400,
 					"h": 260
 				}
@@ -821,7 +884,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 5550,
+					"y": 6060,
 					"w": 1400,
 					"h": 380
 				}
@@ -831,7 +894,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 5010,
+					"y": 5520,
 					"w": 1400,
 					"h": 260
 				}
@@ -841,7 +904,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 4720,
+					"y": 5230,
 					"w": 1400,
 					"h": 280
 				}
@@ -941,8 +1004,8 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 6360,
-					"w": 1390,
+					"y": 6870,
+					"w": 1400,
 					"h": 390
 				}
 			},
@@ -954,6 +1017,16 @@
 					"y": 1410,
 					"w": 1400,
 					"h": 310
+				}
+			},
+			{
+				"item": "viz_WYpR7WwS",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 4840,
+					"w": 1400,
+					"h": 330
 				}
 			}
 		],
