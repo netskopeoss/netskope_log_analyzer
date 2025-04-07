@@ -316,7 +316,7 @@
 		"ds_nyIc4PX7_ds_hQ3DTGtU": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog    \"dynamic steering enhancement\" OR \"detectClientLocation\" OR \" On-prem\"\n| rex field=_raw \"(?<LogTime>\\d{4}\\/\\d{2}\\/\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*cpp.\\d+\\s(?<MSG>.*)\"\n| table LogTime, MSG\n| sort LogTime",
+				"query": "index=netskope_client1 host=\"$field1$\" \"location detected\" OR \"NPA just received\" OR \"Client location is\" OR \"On-prem detection using\"\r\n| rex field=_raw \"(?<LogTime>\\d{4}[-|\\/]\\d{2}[-|\\/]\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3})\\s(?<MSG>.*)\"\r\n| eval LogTime = replace(LogTime, \"-\", \"/\")\r\n| table LogTime, MSG\r\n| sort LogTime",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"
@@ -527,7 +527,8 @@
 			"showLastUpdated": false,
 			"options": {
 				"count": 5
-			}
+			},
+			"description": "This information might not be accurate if Dynamic Steering is enabled."
 		},
 		"viz_MuePvtqM": {
 			"type": "splunk.markdown",
@@ -565,7 +566,7 @@
 						"width": 60
 					}
 				},
-				"count": 1000
+				"count": 2000
 			}
 		},
 		"viz_kWeWWmHq": {

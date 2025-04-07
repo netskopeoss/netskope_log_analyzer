@@ -82,61 +82,6 @@
 			},
 			"name": "Select Client log"
 		},
-		"ds_MRGQyb8i": {
-			"type": "ds.search",
-			"options": {
-				"query": "index=netskope_client1 sourcetype=nsdebuglog host=\"$field1$\" \"clientStatusHandler client status message: \"\n| rex field=_raw \"clientStatusHandler\\sclient\\sstatus\\smessage:\\s(?<client_status>.*)\"\n| spath input=client_status\n| rename client_status.client_version as version\n| stats count by version",
-				"queryParameters": {
-					"earliest": "$tr_n9GlxAEz.earliest$",
-					"latest": "$tr_n9GlxAEz.latest$"
-				}
-			},
-			"name": "Client Version"
-		},
-		"ds_lmo8JfHa": {
-			"type": "ds.search",
-			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=STAUpdate \"Verbose logging\" OR \"Running installation\" OR \": Windows \" \n| sort _time \n| table  _raw\n",
-				"queryParameters": {
-					"earliest": "$tr_n9GlxAEz.earliest$",
-					"latest": "$tr_n9GlxAEz.latest$"
-				}
-			},
-			"name": "Mac install log"
-		},
-		"ds_mJF3HiBv_ds_lmo8JfHa": {
-			"type": "ds.search",
-			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" (sourcetype=nsdebuglog OR sourcetype=stagentUI) \"Config new client version\" OR \"Config download path for client update\" OR \"Config trying to download\" OR \"client auto update\" OR \"starting =\" OR \"Config version json\" OR \"ready to be installed\" OR \"Did not statisfy\" OR \" UPDATE_AVAILABLE \" OR \"Failed to open msi\" OR \"Agent installer path\"\n| table _raw\n| sort _raw",
-				"queryParameters": {
-					"earliest": "$tr_n9GlxAEz.earliest$",
-					"latest": "$tr_n9GlxAEz.latest$"
-				}
-			},
-			"name": "Update history"
-		},
-		"ds_4qbss7jP": {
-			"type": "ds.search",
-			"options": {
-				"query": "index=netskope_client1 sourcetype=nsdebuglog host=\"$field1$\" \"clientStatusHandler client status message: \"\n| sort -_raw\n| rex field=_raw \"clientStatusHandler\\sclient\\sstatus\\smessage:\\s(?<client_status>.*)\"\n| spath input=client_status\n| rename client_status.client_version as version\n| table _time, version\n| dedup consecutive=true version\n| sort _time",
-				"queryParameters": {
-					"earliest": "$tr_n9GlxAEz.earliest$",
-					"latest": "$tr_n9GlxAEz.latest$"
-				}
-			},
-			"name": "Client version table"
-		},
-		"ds_QVwAdiuD_ds_lmo8JfHa": {
-			"type": "ds.search",
-			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsinstall \"netskope*\" OR \"stagent\" OR \" ----- \"\n| sort _raw\n| table _raw\n",
-				"queryParameters": {
-					"earliest": "$tr_n9GlxAEz.earliest$",
-					"latest": "$tr_n9GlxAEz.latest$"
-				}
-			},
-			"name": "install.log - Mac"
-		},
 		"ds_xh0scyrN_ds_3BW1BQjy": {
 			"type": "ds.search",
 			"options": {
@@ -181,17 +126,6 @@
 			},
 			"name": "Log record statistics"
 		},
-		"ds_nPQ7im1n_ds_xwxresdO": {
-			"type": "ds.search",
-			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" \"IdPProvisioning.cpp\"\n| table _raw\n| sort _raw",
-				"queryParameters": {
-					"earliest": "$tr_n9GlxAEz.earliest$",
-					"latest": "$tr_n9GlxAEz.latest$"
-				}
-			},
-			"name": "IDP enroll status"
-		},
 		"ds_LASvWJH6_ds_nPQ7im1n_ds_xwxresdO": {
 			"type": "ds.search",
 			"options": {
@@ -235,17 +169,6 @@
 				}
 			},
 			"name": "Secure Enrollment check"
-		},
-		"ds_cKNz5GTg_ds_KlkPVFOL_ds_9djM1het_ds_xh0scyrN_ds_3BW1BQjy": {
-			"type": "ds.search",
-			"options": {
-				"query": "index=netskope_json1 source=\"*nsconfig.json\" AND NOT source=\"*prelogon_nsconfig.json\" host=\"$field1$\"\n| table clientConfig.MDMSecureEnrollmentTokenEnabled",
-				"queryParameters": {
-					"earliest": "0",
-					"latest": ""
-				}
-			},
-			"name": "Secure Enrollment check copy 1"
 		},
 		"ds_lLndJSn9_ds_SyuP7lQA": {
 			"type": "ds.search",

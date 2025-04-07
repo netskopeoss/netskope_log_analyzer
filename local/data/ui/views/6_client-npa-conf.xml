@@ -268,10 +268,6 @@
 				"primary": "ds_Abg4QXZG_ds_p8PZ4Okn"
 			},
 			"title": "DNS suffix"
-		},
-		"viz_6p1vfiqH": {
-			"type": "splunk.singlevalue",
-			"options": {}
 		}
 	},
 	"inputs": {
@@ -380,16 +376,6 @@
 					"y": 470,
 					"w": 1400,
 					"h": 140
-				}
-			},
-			{
-				"item": "viz_6p1vfiqH",
-				"type": "block",
-				"position": {
-					"x": 200,
-					"y": 3550,
-					"w": 250,
-					"h": 250
 				}
 			}
 		],
