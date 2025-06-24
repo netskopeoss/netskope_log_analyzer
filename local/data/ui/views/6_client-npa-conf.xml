@@ -92,6 +92,39 @@
 				}
 			},
 			"name": "DNS suffixes"
+		},
+		"ds_C1zIDoOL_ds_WppUorFU_ds_nwd5jErf": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=npadebuglog \"SRP live status is\"\n| rex field=_raw \"(?<LogTime>\\d{4}[-|\\/]\\d{2}[-|\\/]\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*status\\sis(?<SrpLiveStatus>.*).\" \n| table LogTime, SrpLiveStatus\n| sort LogTime",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "SRP Live Status"
+		},
+		"ds_5DWXDjdo_ds_C1zIDoOL_ds_WppUorFU_ds_nwd5jErf": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=npadebuglog \"SRP version\"\n| rex field=_raw \"(?<LogTime>\\d{4}[-|\\/]\\d{2}[-|\\/]\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*SRP\\sversion\\s(?<SrpVersion>.*)\\sbuilt\\sin\\s(?<ms>.*)\\sms,\\s(?<SrpBytes>.*)\\sbytes,\\stenant\\s(?<Tenant>.*),\\suser\\s(?<NpaUser>.*),\\s#HostRules\\s(?<HostRules>.*)\\s#DomainRules\\s(?<DomainRules>.*)\\s#SubnetRules\\s(?<SubnetRules>.*).\"\n| fillnull value=null SrpVersion, ms, SrpBytes, Tenant, NpaUser, HostRules, DomainRules, SubnetRules\n| table LogTime, SrpVersion, ms, SrpBytes, Tenant, NpaUser, HostRules, DomainRules, SubnetRules\n| sort LogTime",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "SRP Statistics"
+		},
+		"ds_uBDRtQLr_ds_5DWXDjdo_ds_C1zIDoOL_ds_WppUorFU_ds_nwd5jErf": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=npadebuglog \"Got custom device classification\"\n| rex field=_raw \"(?<LogTime>\\d{4}[-|\\/]\\d{2}[-|\\/]\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*classification\\sstatus\\s(?<MSG>.*)\"\n| table LogTime, MSG",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "Device classification status"
 		}
 	},
 	"visualizations": {
@@ -268,6 +301,90 @@
 				"primary": "ds_Abg4QXZG_ds_p8PZ4Okn"
 			},
 			"title": "DNS suffix"
+		},
+		"viz_4kI9guMs": {
+			"type": "splunk.table",
+			"options": {
+				"columnFormat": {
+					"ip_from_Hex": {
+						"width": 96
+					},
+					"dsthost": {
+						"width": 96
+					},
+					"LogTime": {
+						"width": 60
+					}
+				},
+				"count": 3000
+			},
+			"dataSources": {
+				"primary": "ds_C1zIDoOL_ds_WppUorFU_ds_nwd5jErf"
+			},
+			"title": "SRP Live Status",
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false
+		},
+		"viz_2epg8X4p": {
+			"type": "splunk.table",
+			"options": {
+				"columnFormat": {
+					"ip_from_Hex": {
+						"width": 96
+					},
+					"dsthost": {
+						"width": 96
+					},
+					"LogTime": {
+						"width": 165
+					},
+					"NpaUser": {
+						"width": 133
+					},
+					"ms": {
+						"width": 62
+					}
+				},
+				"count": 3000
+			},
+			"dataSources": {
+				"primary": "ds_5DWXDjdo_ds_C1zIDoOL_ds_WppUorFU_ds_nwd5jErf"
+			},
+			"title": "SRP Statistics",
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false
+		},
+		"viz_T01KZQau": {
+			"type": "splunk.table",
+			"options": {
+				"columnFormat": {
+					"ip_from_Hex": {
+						"width": 96
+					},
+					"dsthost": {
+						"width": 96
+					},
+					"LogTime": {
+						"width": 165
+					},
+					"NpaUser": {
+						"width": 133
+					},
+					"ms": {
+						"width": 62
+					}
+				},
+				"count": 3000
+			},
+			"dataSources": {
+				"primary": "ds_uBDRtQLr_ds_5DWXDjdo_ds_C1zIDoOL_ds_WppUorFU_ds_nwd5jErf"
+			},
+			"title": "Device Classification status",
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false
 		}
 	},
 	"inputs": {
@@ -376,6 +493,36 @@
 					"y": 470,
 					"w": 1400,
 					"h": 140
+				}
+			},
+			{
+				"item": "viz_4kI9guMs",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 3510,
+					"w": 540,
+					"h": 530
+				}
+			},
+			{
+				"item": "viz_2epg8X4p",
+				"type": "block",
+				"position": {
+					"x": 10,
+					"y": 4070,
+					"w": 1380,
+					"h": 530
+				}
+			},
+			{
+				"item": "viz_T01KZQau",
+				"type": "block",
+				"position": {
+					"x": 10,
+					"y": 4630,
+					"w": 1380,
+					"h": 530
 				}
 			}
 		],

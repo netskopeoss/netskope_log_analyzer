@@ -41,7 +41,7 @@
 		"ds_hLXoE9n0": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" \"TLS client established connection\" OR \"NPA Tunnel Status: Connected\"\n\nearliest=[ search index=netskope_client1 host=\"$field1$\" \"TLS client established connection\" OR \"NPA Tunnel Status: Connected\" | stats min(_time) as earliest_time | return $earliest_time ]  \nlatest=[ search index=netskope_client1 host=\"$field1$\" \"TLS client established connection\" OR \"NPA Tunnel Status: Connected\" | stats max(_time) as latest_time | return $latest_time ]\n\n| rex field=_raw \"(?<NPA_GW>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\"\n| timechart span=1h count by NPA_GW useother=false",
+				"query": "index=netskope_client1 host=\"$field1$\" \"TLS client established connection\" OR \"NPA Tunnel Status: Connected\"\n\nearliest=[ search index=netskope_client1 host=\"$field1$\" \"TLS client established connection\" OR \"NPA Tunnel Status: Connected\" | stats min(_time) as earliest_time | return $earliest_time ]  \nlatest=[ search index=netskope_client1 host=\"$field1$\" \"TLS client established connection\" OR \"NPA Tunnel Status: Connected\" | stats max(_time) as latest_time | return $latest_time ]\n\n| rex field=_raw \"(?<NPA_GW>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\"\n| timechart  count by NPA_GW useother=false",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"
@@ -327,7 +327,7 @@
 		"ds_T9mK391v_ds_iohORCkR_ds_nz8SDx8s_ds_uymu0ww9": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_json1 host=\"$field1$\" sourcetype=\"nsconfig\" source=\"*nsconfig.json\"\n| table privateApps*, source\n| transpose",
+				"query": "index=netskope_json1 host=\"$field1$\" sourcetype=\"nsconfig\" source=\"*nsconfig.json\"\n| table clientConfig.configurationName, privateApps*, source\n| transpose",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"

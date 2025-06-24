@@ -8,7 +8,7 @@
 		"ds_lMaikGeN": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_json1 host=\"$field1$\" sourcetype=nsconfig source=\"*nsexception.json\"\n| table ips*",
+				"query": "index=netskope_json1 host=\"$field1$\" sourcetype=nsconfig source=\"*nsexception.json\"\n| table *ips*",
 				"queryParameters": {
 					"earliest": "0",
 					"latest": "now"
@@ -349,7 +349,7 @@
 		"ds_ttnOtVXy_ds_lMaikGeN": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_json1 host=\"$field1$\" sourcetype=nsconfig source=\"*nsexception.json\"\n| table names*",
+				"query": "index=netskope_json1 host=\"$field1$\" sourcetype=nsconfig source=\"*nsexception.json\"\n| table *names*",
 				"queryParameters": {
 					"earliest": "0",
 					"latest": "now"
@@ -360,7 +360,7 @@
 		"ds_qzgOgbKS_ds_ttnOtVXy_ds_lMaikGeN": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_json1 host=\"$field1$\" sourcetype=nsconfig source=\"*nsexception.json\"\n| table fail_close*",
+				"query": "index=netskope_json1 host=\"$field1$\" sourcetype=nsconfig source=\"*nsexception.json\"\n| table *fail_close*",
 				"queryParameters": {
 					"earliest": "0",
 					"latest": "now"
@@ -444,6 +444,17 @@
 				}
 			},
 			"name": "DynamicSteering1"
+		},
+		"ds_8jE8G4b3_ds_k9DPYgqN_ds_bPzLCYSQ_ds_tFQJ5Y1y_ds_nyIc4PX7_ds_hQ3DTGtU": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"nsAppUI\" \"NotificationMsg Justification Body\"\n| rex field=_raw \"(?<LogTime>\\d{4}[-|\\/]\\d{2}[-|\\/]\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*Justification\\sBody\\s(?<MSG>[\\S\\s]*)\"\n| spath input=MSG\n| table LogTime, policy_name, app, activity, instance_id, from_user, uj_block_type, justification*, submitId\n| sort LogTime",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "Block msg"
 		}
 	},
 	"visualizations": {
@@ -804,6 +815,54 @@
 				},
 				"count": 1000
 			}
+		},
+		"viz_mztaFhE2": {
+			"type": "splunk.table",
+			"dataSources": {
+				"primary": "ds_8jE8G4b3_ds_k9DPYgqN_ds_bPzLCYSQ_ds_tFQJ5Y1y_ds_nyIc4PX7_ds_hQ3DTGtU"
+			},
+			"title": "Block msg",
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false,
+			"options": {
+				"columnFormat": {
+					"LogTime": {
+						"width": 133
+					},
+					"Process": {
+						"width": 60
+					},
+					"HostIP": {
+						"width": 340
+					},
+					"Dst": {
+						"width": 117
+					},
+					"policy_name": {
+						"width": 187
+					},
+					"app": {
+						"width": 90
+					},
+					"justification_reason": {
+						"width": 90
+					},
+					"from_user": {
+						"width": 86
+					}
+				},
+				"fontSize": "small",
+				"count": 1000
+			}
+		},
+		"viz_XuQPHA4c": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "### Block msg",
+				"backgroundColor": "#708794",
+				"fontSize": "extraLarge"
+			}
 		}
 	},
 	"inputs": {
@@ -1082,6 +1141,26 @@
 					"y": 2620,
 					"w": 1400,
 					"h": 420
+				}
+			},
+			{
+				"item": "viz_XuQPHA4c",
+				"type": "block",
+				"position": {
+					"x": 10,
+					"y": 7290,
+					"w": 1420,
+					"h": 590
+				}
+			},
+			{
+				"item": "viz_mztaFhE2",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 7350,
+					"w": 1400,
+					"h": 510
 				}
 			}
 		],

@@ -371,13 +371,13 @@
 		"ds_DwRhkHre_ds_93ffU7nk_ds_FdRRg5Qz_ds_Cfo912F2_ds_ydLKTkRP_ds_ORP4wiSl_ds_YSgjGLGw_ds_mzmNhkaL_ds_v57DBEEj_ds_hLXoE9n0": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"nsdebuglog\"  \"Primary tunnel source IP\"\n| rex field=_raw \"source\\sIP:\\s(?<Source>.*)\\sPrimary\\stunnel\\sdest\\sIP:\\s(?<Dst>.*)\" \n| eval Source-Dst=\"Tunnel source IP: \".Source.\" Dst IP: \".Dst\n| stats values(Source-Dst) as Source-Dst",
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"nsdebuglog\" \"egress_ip\"\n| rex field=_raw \"egress_ip\\\":\\\"(?<EgressIP>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\"\n| stats values(EgressIP) as EgressIP",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"
 				}
 			},
-			"name": "Tunnel souce copy 1"
+			"name": "GSLB egress IP"
 		},
 		"ds_qzdgBBc5_ds_9ze5Vfw0": {
 			"type": "ds.search",
@@ -729,7 +729,7 @@
 			"dataSources": {
 				"primary": "ds_DwRhkHre_ds_93ffU7nk_ds_FdRRg5Qz_ds_Cfo912F2_ds_ydLKTkRP_ds_ORP4wiSl_ds_YSgjGLGw_ds_mzmNhkaL_ds_v57DBEEj_ds_hLXoE9n0"
 			},
-			"title": "Tunnel source",
+			"title": "GSLB - egress IP",
 			"containerOptions": {},
 			"showProgressBar": false,
 			"showLastUpdated": false,
@@ -1018,7 +1018,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 1720,
+					"y": 1460,
 					"w": 1400,
 					"h": 250
 				}
@@ -1048,7 +1048,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 1460,
+					"y": 1720,
 					"w": 1400,
 					"h": 250
 				}
