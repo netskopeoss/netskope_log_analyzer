@@ -19,13 +19,13 @@
 		"ds_hQ3DTGtU": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"nsdebuglog\" \"Bypassing\" AND \"tunneling\"  \n\nearliest=[ search index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog | stats min(_time) as earliest_time | return $earliest_time ]  \nlatest=[ search index=netskope_client1 host=\"$field1$\" sourcetype=nsdebuglog | stats max(_time) as latest_time | return $latest_time ]\n\n| rex field=_raw \"process:\\s*(?<Process>.*?)(?=(\\sfor|\\sto|,))\"\n| timechart count by Process useother=false",
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"nsdebuglog\" \"FailClosed flow dropped\" OR \"app-fw\" OR \"Tunneling flow from\" OR \"bypassing flow to exception host\" OR \"Bypassing connection from process\" OR \"Bypassing connection by tunneling from process\" OR \"Dropping connection from process\" OR \"exception Dest IP\"\r\n| eval log_type = case(\r\n    like(_raw, \"%FailClosed flow dropped%\"), \"FailClosed flow dropped\",\r\n    like(_raw, \"%app-fw%\"), \"CFW traffic\",\r\n    like(_raw, \"%Tunneling flow from%\"), \"Tunneling flow from\",\r\n    like(_raw, \"%bypassing flow to exception host%\"), \"Bypassed by domain\",\r\n    like(_raw, \"%Bypassing connection from process%\"), \"Bypassed by process\",\r\n    like(_raw, \"%Bypassing connection by tunneling from process%\"), \"Tunnel bypass\",\r\n    like(_raw, \"%Dropping connection from process%\"), \"Dropping connection from process\",\r\n    like(_raw, \"%exception Dest IP%\"), \"Bypassed by IP\",\r\n    1==1, \"Other\"\r\n)\r\n| timechart count by log_type",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"
 				}
 			},
-			"name": "Tunnel bypassed traffic"
+			"name": "How traffic was hundled"
 		},
 		"ds_IBqh7Cpp": {
 			"type": "ds.search",
@@ -473,15 +473,16 @@
 			"title": "nsexception.json - ips"
 		},
 		"viz_BQPdbt1a": {
-			"type": "splunk.column",
+			"type": "splunk.area",
 			"options": {
-				"stackMode": "stacked",
-				"legendDisplay": "bottom"
+				"legendDisplay": "bottom",
+				"yAxisScale": "log",
+				"stackMode": "stacked"
 			},
 			"dataSources": {
 				"primary": "ds_hQ3DTGtU"
 			},
-			"title": "Ttunnel bypassed traffic",
+			"title": "How traffic was handled",
 			"containerOptions": {},
 			"showProgressBar": false,
 			"showLastUpdated": false

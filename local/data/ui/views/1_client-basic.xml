@@ -173,7 +173,7 @@
 		"ds_lLndJSn9_ds_SyuP7lQA": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"nsAppUI\" OR sourcetype=\"nsdebuglog\" \"m_enableSecureEnrollment\"\n| rex field=_raw \"(?<LogTime>\\d{4}\\/\\d{2}\\/\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3})\\s.*(?<m_enableSecureEnrollment>m_enableSecureEnrollment.*)\"\n| sort LogTime\n| dedup m_enableSecureEnrollment \n| table LogTime, m_enableSecureEnrollment",
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"nsAppUI\" OR sourcetype=\"nsdebuglog\" \"m_enableSecureEnrollment\" AND NOT \"prelogon\"\n| rex field=_raw \"(?<LogTime>\\d{4}\\/\\d{2}\\/\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3})\\s.*(?<m_enableSecureEnrollment>m_enableSecureEnrollment.*)\"\n| sort LogTime\n| dedup m_enableSecureEnrollment \n| table LogTime, m_enableSecureEnrollment",
 				"queryParameters": {
 					"earliest": "0",
 					"latest": "now"
@@ -977,9 +977,9 @@
 				"item": "viz_YK19Q4Uu",
 				"type": "block",
 				"position": {
-					"x": 720,
+					"x": 20,
 					"y": 4100,
-					"w": 700,
+					"w": 1400,
 					"h": 230
 				}
 			},

@@ -294,7 +294,7 @@
 		"ds_FdRRg5Qz_ds_Cfo912F2_ds_ydLKTkRP_ds_ORP4wiSl_ds_YSgjGLGw_ds_mzmNhkaL_ds_v57DBEEj_ds_hLXoE9n0": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" \"fail close\"\n| table _raw\n| sort _raw",
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"nsdebuglog\"  \"fail closed\" OR \"Stopping npa tunnel due to fail close\" AND NOT \"client status message\"\n| table _raw\n| sort _raw",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"
@@ -316,7 +316,7 @@
 		"ds_YbdBjyRU_ds_HuwBRM3v_ds_hLXoE9n0": {
 			"type": "ds.search",
 			"options": {
-				"query": "host=\"$field1$\" index=netskope_json1 sourcetype=nsconfig source=\"*nsconfig.json\" AND NOT source=\"*prelogon_nsconfig.json\"\n| table failClose*\n| transpose 0 column_name=\"header\":\n| fields - \"column\"",
+				"query": "host=\"$field1$\" index=netskope_json1 sourcetype=nsconfig source=\"*nsconfig.json\" AND NOT source=\"*prelogon_nsconfig.json\"\n| table *failClose*\n| transpose 0 column_name=\"header\":\n| fields - \"column\"",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"
@@ -400,6 +400,28 @@
 				}
 			},
 			"name": "GSLB curPop"
+		},
+		"ds_SAPOuGN5_ds_YbdBjyRU_ds_HuwBRM3v_ds_hLXoE9n0": {
+			"type": "ds.search",
+			"options": {
+				"query": "host=\"$field1$\" index=netskope_json1 source=\"*nsuser.conf\" AND NOT source=\"*prelogon_nsuser.conf\"\n| table userConfig.failCloseStatus, ",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "Failclose setting - nsconfig.json copy 1"
+		},
+		"ds_5QJ6pJ9y_ds_FdRRg5Qz_ds_Cfo912F2_ds_ydLKTkRP_ds_ORP4wiSl_ds_YSgjGLGw_ds_mzmNhkaL_ds_v57DBEEj_ds_hLXoE9n0": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" \"Fail Closed\" OR \"FailClosed flow dropped\"\n| eval log_type = case(\n    like(_raw, \"%FailClosed flow dropped%\"), \"Actual dropped traffic\",\n    like(_raw, \"%losed%\"), \"Status: Fail Closed\",\n    1==1, \"Other\"\n)\n| timechart count by log_type",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "Fail close timechart"
 		}
 	},
 	"visualizations": {
@@ -627,7 +649,8 @@
 					"_time": {
 						"width": 60
 					}
-				}
+				},
+				"count": 1000
 			}
 		},
 		"viz_c3TWX3vI": {
@@ -656,7 +679,7 @@
 			"dataSources": {
 				"primary": "ds_YbdBjyRU_ds_HuwBRM3v_ds_hLXoE9n0"
 			},
-			"title": "Failclose setting - nsconfig.json",
+			"title": "Failclose global setting - nsconfig.json",
 			"containerOptions": {},
 			"showProgressBar": false,
 			"showLastUpdated": false,
@@ -752,6 +775,40 @@
 			"showLastUpdated": false,
 			"options": {
 				"legendDisplay": "bottom"
+			}
+		},
+		"viz_bmDB17GP": {
+			"type": "splunk.table",
+			"dataSources": {
+				"primary": "ds_SAPOuGN5_ds_YbdBjyRU_ds_HuwBRM3v_ds_hLXoE9n0"
+			},
+			"title": "Failclose user setting - nsuser.conf",
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false,
+			"options": {
+				"columnFormat": {
+					"header:": {
+						"width": 92
+					}
+				}
+			}
+		},
+		"viz_xhM8wyFI": {
+			"type": "splunk.column",
+			"dataSources": {
+				"primary": "ds_5QJ6pJ9y_ds_FdRRg5Qz_ds_Cfo912F2_ds_ydLKTkRP_ds_ORP4wiSl_ds_YSgjGLGw_ds_mzmNhkaL_ds_v57DBEEj_ds_hLXoE9n0"
+			},
+			"title": "Fail close timechart",
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false,
+			"options": {
+				"legendDisplay": "bottom",
+				"overlayFields": [
+					"Actual dropped traffic"
+				],
+				"yAxisScale": "log"
 			}
 		}
 	},
@@ -970,7 +1027,7 @@
 					"x": 10,
 					"y": 6961,
 					"w": 1420,
-					"h": 819
+					"h": 1498
 				}
 			},
 			{
@@ -978,7 +1035,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 7010,
+					"y": 7720,
 					"w": 1400,
 					"h": 350
 				}
@@ -998,7 +1055,7 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 7380,
+					"y": 7000,
 					"w": 1400,
 					"h": 340
 				}
@@ -1061,6 +1118,26 @@
 					"y": 4870,
 					"w": 1400,
 					"h": 410
+				}
+			},
+			{
+				"item": "viz_bmDB17GP",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 7360,
+					"w": 1400,
+					"h": 340
+				}
+			},
+			{
+				"item": "viz_xhM8wyFI",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 8090,
+					"w": 1400,
+					"h": 350
 				}
 			}
 		],
