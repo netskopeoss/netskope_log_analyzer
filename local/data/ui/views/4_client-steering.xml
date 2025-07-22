@@ -19,7 +19,7 @@
 		"ds_hQ3DTGtU": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"nsdebuglog\" \"FailClosed flow dropped\" OR \"app-fw\" OR \"Tunneling flow from\" OR \"bypassing flow to exception host\" OR \"Bypassing connection from process\" OR \"Bypassing connection by tunneling from process\" OR \"Dropping connection from process\" OR \"exception Dest IP\"\r\n| eval log_type = case(\r\n    like(_raw, \"%FailClosed flow dropped%\"), \"FailClosed flow dropped\",\r\n    like(_raw, \"%app-fw%\"), \"CFW traffic\",\r\n    like(_raw, \"%Tunneling flow from%\"), \"Tunneling flow from\",\r\n    like(_raw, \"%bypassing flow to exception host%\"), \"Bypassed by domain\",\r\n    like(_raw, \"%Bypassing connection from process%\"), \"Bypassed by process\",\r\n    like(_raw, \"%Bypassing connection by tunneling from process%\"), \"Tunnel bypass\",\r\n    like(_raw, \"%Dropping connection from process%\"), \"Dropping connection from process\",\r\n    like(_raw, \"%exception Dest IP%\"), \"Bypassed by IP\",\r\n    1==1, \"Other\"\r\n)\r\n| timechart count by log_type",
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"nsdebuglog\" \"FailClosed flow dropped\" OR \"app-fw\" OR \"Tunneling flow from\" OR \"bypassing flow to exception host\" OR \"Bypassing connection from process\" OR \"Bypassing connection by tunneling from process\" OR \"Dropping connection from process\" OR \"exception Dest IP\" OR \"white listed process\"\r\n\r\n\r\nearliest=[ search index=netskope_client1 host=\"$field1$\" sourcetype=\"nsdebuglog\" | stats min(_time) as earliest_time | return $earliest_time ]  \r\nlatest=[ search index=netskope_client1 host=\"$field1$\"  sourcetype=\"nsdebuglog\" | stats max(_time) as latest_time | return $latest_time ]\r\n\r\n\r\n| eval log_type = case(\r\n    like(_raw, \"%FailClosed flow dropped%\"), \"FailClosed flow dropped\",\r\n    like(_raw, \"%app-fw%\"), \"CFW traffic\",\r\n    like(_raw, \"%Tunneling flow from%\"), \"Tunneling flow from\",\r\n    like(_raw, \"%bypassing flow to exception host%\"), \"Bypassed by domain\",\r\n    like(_raw, \"%Bypassing connection from process%\"), \"Bypassed by process\",\r\n    like(_raw, \"%Bypassing connection by tunneling from process%\"), \"Tunnel bypass\",\r\n    like(_raw, \"%Dropping connection from process%\"), \"Dropping connection from process\",\r\n    like(_raw, \"%exception Dest IP%\"), \"Bypassed by IP\",\r\n    like(_raw, \"%white listed process%\"), \"white listed process\",\r\n    1==1, \"Other\"\r\n)\r\n| timechart span=1h count by log_type",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"
@@ -455,6 +455,17 @@
 				}
 			},
 			"name": "Block msg"
+		},
+		"ds_8CMZV121_ds_8jE8G4b3_ds_k9DPYgqN_ds_bPzLCYSQ_ds_tFQJ5Y1y_ds_nyIc4PX7_ds_hQ3DTGtU": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\"  sourcetype=\"nsdebuglog\" \"classification status:\" OR \"deviceId\" OR \"diskEnc\"\n| table _raw\n| sort _raw",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "Device classification"
 		}
 	},
 	"visualizations": {
@@ -476,8 +487,8 @@
 			"type": "splunk.area",
 			"options": {
 				"legendDisplay": "bottom",
-				"yAxisScale": "log",
-				"stackMode": "stacked"
+				"stackMode": "stacked",
+				"yAxisScale": "log"
 			},
 			"dataSources": {
 				"primary": "ds_hQ3DTGtU"
@@ -864,6 +875,54 @@
 				"backgroundColor": "#708794",
 				"fontSize": "extraLarge"
 			}
+		},
+		"viz_qG4tRm2z": {
+			"type": "splunk.markdown",
+			"options": {
+				"markdown": "### Device classification",
+				"backgroundColor": "#708794",
+				"fontSize": "extraLarge"
+			}
+		},
+		"viz_BSQQzlP2": {
+			"type": "splunk.table",
+			"dataSources": {
+				"primary": "ds_8CMZV121_ds_8jE8G4b3_ds_k9DPYgqN_ds_bPzLCYSQ_ds_tFQJ5Y1y_ds_nyIc4PX7_ds_hQ3DTGtU"
+			},
+			"title": "Device Classification history",
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false,
+			"options": {
+				"columnFormat": {
+					"LogTime": {
+						"width": 133
+					},
+					"Process": {
+						"width": 60
+					},
+					"HostIP": {
+						"width": 340
+					},
+					"Dst": {
+						"width": 117
+					},
+					"policy_name": {
+						"width": 187
+					},
+					"app": {
+						"width": 90
+					},
+					"justification_reason": {
+						"width": 90
+					},
+					"from_user": {
+						"width": 86
+					}
+				},
+				"fontSize": "small",
+				"count": 1000
+			}
 		}
 	},
 	"inputs": {
@@ -1162,6 +1221,26 @@
 					"y": 7350,
 					"w": 1400,
 					"h": 510
+				}
+			},
+			{
+				"item": "viz_qG4tRm2z",
+				"type": "block",
+				"position": {
+					"x": 10,
+					"y": 7890,
+					"w": 1420,
+					"h": 590
+				}
+			},
+			{
+				"item": "viz_BSQQzlP2",
+				"type": "block",
+				"position": {
+					"x": 20,
+					"y": 7930,
+					"w": 1400,
+					"h": 540
 				}
 			}
 		],

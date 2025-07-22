@@ -349,7 +349,7 @@
 		"ds_az2tUa7d_ds_8jat6ydz_ds_iohORCkR_ds_nz8SDx8s_ds_uymu0ww9": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\"  sourcetype=npadebuglog \"Next re-auth prompt\"\n| rex field=_raw \"(?<LogTime>\\d{4}[-|\\/]\\d{2}[-|\\/]\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*prompt\\sat\\s\\[(?<PromptAt>\\d+)\\].*expiry\\sat\\s\\[(?<ExpiryAt>\\d+)\\].*time\\s\\[(?<Current>\\d+)\\]\" \n| eval MyPromptAt = strftime(PromptAt, \"%Y/%m/%d %H:%M:%S\")\n| eval PromptAt = PromptAt.\" (\".MyPromptAt.\")\"\n| eval MyExpiryAt = strftime(ExpiryAt, \"%Y/%m/%d %H:%M:%S\")\n| eval ExpiryAt = ExpiryAt.\" (\".MyExpiryAt.\")\"\n| eval MyCurrent = strftime(Current, \"%Y/%m/%d %H:%M:%S\")\n| eval Current = Current.\" (\".MyCurrent.\")\"\n| table LogTime, PromptAt, ExpiryAt, Current\n| sort LogTime",
+				"query": "index=netskope_client1 host=\"$field1$\"  sourcetype=npadebuglog \"Next re-auth prompt at\"\n| rex field=_raw \"(?<LogTime>\\d{4}[-|\\/]\\d{2}[-|\\/]\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*prompt\\sat\\s\\[(?<PromptAt>\\d+)\\].*expiry\\sat\\s\\[(?<ExpiryAt>\\d+)\\].*time\\s\\[(?<Current>\\d+)\\]\" \n| eval MyPromptAt = strftime(PromptAt, \"%Y/%m/%d %H:%M:%S\")\n| eval PromptAt = PromptAt.\" (\".MyPromptAt.\")\"\n| eval MyExpiryAt = strftime(ExpiryAt, \"%Y/%m/%d %H:%M:%S\")\n| eval ExpiryAt = ExpiryAt.\" (\".MyExpiryAt.\")\"\n| eval MyCurrent = strftime(Current, \"%Y/%m/%d %H:%M:%S\")\n| eval Current = Current.\" (\".MyCurrent.\")\"\n| table LogTime, PromptAt, ExpiryAt, Current\n| sort LogTime",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"
@@ -378,6 +378,17 @@
 				}
 			},
 			"name": "NPA RETRANS RTT copy 1"
+		},
+		"ds_olhThr4E_ds_az2tUa7d_ds_8jat6ydz_ds_iohORCkR_ds_nz8SDx8s_ds_uymu0ww9": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\"  sourcetype=npadebuglog  \"Next re-auth prompt after\"\n| rex field=_raw \"(?<LogTime>\\d{4}[-|\\/]\\d{2}[-|\\/]\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*prompt\\safter\\s\\[(?<PromptAfter>\\d+)\\].*expiry\\safter\\s\\[(?<ExpiryAfter>\\d+)\\]\" \n| eval MyPromptAfter = PromptAfter / 60 / 60 / 24\n| eval PromptAfter = PromptAfter.\" (\".MyPromptAfter.\" days)\"\n| eval MyExpiryAfter = ExpiryAfter / 60 / 60/ 24\n| eval ExpiryAfter = ExpiryAfter.\" (\".MyExpiryAfter.\" days)\"\n| table LogTime, PromptAfter, ExpiryAfter, \n| sort LogTime",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "Next re-auth prompt copy 1"
 		}
 	},
 	"visualizations": {
@@ -749,6 +760,24 @@
 				},
 				"count": 500
 			}
+		},
+		"viz_GB3WutIX": {
+			"type": "splunk.table",
+			"dataSources": {
+				"primary": "ds_olhThr4E_ds_az2tUa7d_ds_8jat6ydz_ds_iohORCkR_ds_nz8SDx8s_ds_uymu0ww9"
+			},
+			"title": "Next re-auth prompt",
+			"containerOptions": {},
+			"showProgressBar": false,
+			"showLastUpdated": false,
+			"options": {
+				"columnFormat": {
+					"LogTime": {
+						"width": 60
+					}
+				},
+				"count": 500
+			}
 		}
 	},
 	"inputs": {
@@ -1028,6 +1057,16 @@
 					"y": 4840,
 					"w": 1400,
 					"h": 330
+				}
+			},
+			{
+				"item": "viz_GB3WutIX",
+				"type": "block",
+				"position": {
+					"x": 380,
+					"y": 1650,
+					"w": 1400,
+					"h": 310
 				}
 			}
 		],

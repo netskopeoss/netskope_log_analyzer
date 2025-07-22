@@ -140,7 +140,7 @@
 		"ds_Zc584eYm": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" (\"enroll*\" AND \"host\") OR \" SE \" OR \"nsEnrollmentToken\"\n| table _raw\n| sort _raw",
+				"query": "index=netskope_client1 host=\"$field1$\" AND NOT  sourcetype=winappinfo (\"enroll*\" AND \"host\") OR \" SE \" OR \"nsEnrollmentToken\"\n| table _raw\n| sort _raw",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"
@@ -468,7 +468,7 @@
 		"viz_2p9qfOT1": {
 			"type": "splunk.table",
 			"options": {
-				"count": 500,
+				"count": 2000,
 				"dataOverlayMode": "none",
 				"drilldown": "none",
 				"showRowNumbers": false,
