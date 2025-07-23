@@ -41,10 +41,10 @@
 		"ds_SyuP7lQA": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"nsAppUI\" \"Checking IdP mode values\"\n| rex field=_raw \"idPModeEnabled\\s:\\s(?<idPModeEnabled>.*)\\s,\\sidPLoggedIn\\s(?<idPLoggedIn>.*)\\s\"\n| table _raw, idPModeEnabled, idPLoggedIn",
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"nsAppUI\" \"Checking IdP mode values\"\n sourcetype=\"nsAppUI\" \"Checking IdP mode values\"\n| rex field=_raw \"(?<LogTime>\\d{4}\\/\\d{2}\\/\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3})\\s.*idPModeEnabled\\s:\\s(?<idPModeEnabled>.*)\\s,\\sidPLoggedIn\\s(?<idPLoggedIn>.*)\\s\"\n\n| eval idPModeEnabled_is = case(\n    idPModeEnabled=\"1\", \"NS client was installed with IDP mode\",\n    true(), \"NS client was NOT installed with IDP mode\"\n)\n\n| eval idPLoggedIn_is = case(\n    idPLoggedIn=\"1\", \"Peruser mode\",\n    true(), \"Single user mode\"\n)\n\n| eval idPModeEnabled = idPModeEnabled.\" (\".idPModeEnabled_is.\")\"\n| eval idPLoggedIn = idPLoggedIn.\" (\".idPLoggedIn_is.\")\"\n\n| table LogTime, idPModeEnabled, idPLoggedIn\n| sort LogTime",
 				"queryParameters": {
-					"earliest": "0",
-					"latest": "now"
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
 				}
 			},
 			"name": "IDP mode search"
@@ -173,7 +173,7 @@
 		"ds_lLndJSn9_ds_SyuP7lQA": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"nsAppUI\" OR sourcetype=\"nsdebuglog\" \"m_enableSecureEnrollment\" AND NOT \"prelogon\"\n| rex field=_raw \"(?<LogTime>\\d{4}\\/\\d{2}\\/\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3})\\s.*(?<m_enableSecureEnrollment>m_enableSecureEnrollment.*)\"\n| sort LogTime\n| dedup m_enableSecureEnrollment \n| table LogTime, m_enableSecureEnrollment",
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"nsAppUI\" OR sourcetype=\"nsdebuglog\" (\"m_enableSecureEnrollment\" OR \"secureEnrollStatus\") \n| rex field=_raw \"(?<LogTime>\\d{4}\\/\\d{2}\\/\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3})\\s.*(?:secureEnrollStatus\\s=\\s(?<secureEnrollStatus>\\d),\\s)?m_enableSecureEnrollment\\s=\\s(?<m_enableSecureEnrollment>\\d)\"\n\n| eval m_enableSecureEnrollment_is = case(\n    m_enableSecureEnrollment=\"0\", \"Not configured\",\n    m_enableSecureEnrollment=\"1\", \"Enabled\",\n    m_enableSecureEnrollment=\"2\", \"Disabled\",\n    true(), \"\"\n)\n\n| eval secureEnrollStatus_is = case(\n    secureEnrollStatus=\"0\", \"Not configured\",\n    secureEnrollStatus=\"1\", \"Enabled\",\n    secureEnrollStatus=\"2\", \"Disabled\",\n    true(), \"\"\n)\n| eval m_enableSecureEnrollment = m_enableSecureEnrollment.\" (\".m_enableSecureEnrollment_is.\")\"\n| eval secureEnrollStatus = secureEnrollStatus.\" (\".secureEnrollStatus_is.\")\"\n\n| table LogTime, m_enableSecureEnrollment, secureEnrollStatus, sourcetype\n| sort LogTime",
 				"queryParameters": {
 					"earliest": "0",
 					"latest": "now"
@@ -195,7 +195,7 @@
 		"ds_rfqCzS3k_ds_lLndJSn9_ds_SyuP7lQA": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"nsAppUI\" OR sourcetype=\"nsdebuglog\" \"validateConfig\"\n| rex field=_raw \"(?<LogTime>\\d{4}\\/\\d{2}\\/\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3})\\s.*\\s(?<validateConfig>Config\\s.*)\"\n| sort LogTime\n| dedup validateConfig\n| table LogTime, validateConfig",
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"nsAppUI\" OR sourcetype=\"nsdebuglog\" \"validateConfig\"\n| rex field=_raw \"(?<LogTime>\\d{4}\\/\\d{2}\\/\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3})\\s.*\\s(?<validateConfig>Config\\s.*)\"\n| sort LogTime\n| dedup validateConfig\n| table LogTime, validateConfig, sourcetype",
 				"queryParameters": {
 					"earliest": "0",
 					"latest": "now"
@@ -257,6 +257,17 @@
 				}
 			},
 			"name": "Win - Update log copy 1"
+		},
+		"ds_Xymi6k2g_ds_KlkPVFOL_ds_9djM1het_ds_xh0scyrN_ds_3BW1BQjy": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_json1 source=\"*nsconfig.json\" AND NOT source=\"*prelogon_nsconfig.json\" host=\"$field1$\"\n| table clientConfig.secure_config_validation",
+				"queryParameters": {
+					"earliest": "0",
+					"latest": ""
+				}
+			},
+			"name": "Secure Enrollment check copy 1"
 		}
 	},
 	"visualizations": {
@@ -308,12 +319,26 @@
 				"dataOverlayMode": "none",
 				"drilldown": "none",
 				"showRowNumbers": false,
-				"showInternalFields": false
+				"showInternalFields": false,
+				"columnFormat": {
+					"LogTime": {
+						"width": 355
+					},
+					"idPLoggedIn": {
+						"width": 462
+					},
+					"idPModeEnabled_is": {
+						"width": 264
+					},
+					"idPModeEnabled": {
+						"width": 521
+					}
+				}
 			},
 			"dataSources": {
 				"primary": "ds_SyuP7lQA"
 			},
-			"title": "IDP mode",
+			"title": "Check if NS client was installed with IDP mode",
 			"description": ""
 		},
 		"viz_4kZY6rcn": {
@@ -402,7 +427,7 @@
 			"containerOptions": {
 				"visibility": {}
 			},
-			"title": "Peruserconfig setting",
+			"title": "Peruserconfig setting - nsuserconfig.json",
 			"showProgressBar": false,
 			"showLastUpdated": false
 		},
@@ -457,14 +482,6 @@
 			},
 			"title": "Log record statistics"
 		},
-		"viz_HqoRZor5": {
-			"type": "splunk.markdown",
-			"options": {
-				"markdown": "### Is IDP mode enabled?",
-				"backgroundColor": "#708794",
-				"fontSize": "extraLarge"
-			}
-		},
 		"viz_2p9qfOT1": {
 			"type": "splunk.table",
 			"options": {
@@ -494,7 +511,7 @@
 			"dataSources": {
 				"primary": "ds_LASvWJH6_ds_nPQ7im1n_ds_xwxresdO"
 			},
-			"title": "Enroll status"
+			"title": "Client status"
 		},
 		"viz_2fawUWg6": {
 			"type": "splunk.table",
@@ -574,14 +591,17 @@
 				"showInternalFields": false,
 				"columnFormat": {
 					"LogTime": {
-						"width": 60
+						"width": 129
+					},
+					"m_enableSecureEnrollment_is": {
+						"width": 106
 					}
 				}
 			},
 			"dataSources": {
 				"primary": "ds_lLndJSn9_ds_SyuP7lQA"
 			},
-			"title": "Secure enrollment"
+			"title": "Secure enrollment - nsdebuglog.log or nsAppUI.log"
 		},
 		"viz_CEXCR2o5": {
 			"type": "splunk.singlevalue",
@@ -606,13 +626,16 @@
 				"columnFormat": {
 					"LogTime": {
 						"width": 60
+					},
+					"validateConfig": {
+						"width": 157
 					}
 				}
 			},
 			"dataSources": {
 				"primary": "ds_rfqCzS3k_ds_lLndJSn9_ds_SyuP7lQA"
 			},
-			"title": "Secure enrollment - ValidateConfig"
+			"title": "Validate config - - nsdebuglog.log or nsAppUI.log"
 		},
 		"viz_l0gxKIAM": {
 			"type": "splunk.markdown",
@@ -693,6 +716,18 @@
 				"count": 1000,
 				"fontSize": "small"
 			}
+		},
+		"viz_qOrUIPLg": {
+			"type": "splunk.singlevalue",
+			"dataSources": {
+				"primary": "ds_Xymi6k2g_ds_KlkPVFOL_ds_9djM1het_ds_xh0scyrN_ds_3BW1BQjy"
+			},
+			"containerOptions": {
+				"visibility": {}
+			},
+			"title": "Secure config validation - nsconfig",
+			"showProgressBar": false,
+			"showLastUpdated": false
 		}
 	},
 	"inputs": {
@@ -728,9 +763,9 @@
 				"type": "block",
 				"position": {
 					"x": 10,
-					"y": 3860,
+					"y": 4770,
 					"w": 1420,
-					"h": 1600
+					"h": 1860
 				}
 			},
 			{
@@ -798,18 +833,18 @@
 				"type": "block",
 				"position": {
 					"x": 10,
-					"y": 5470,
+					"y": 3570,
 					"w": 1420,
-					"h": 870
+					"h": 940
 				}
 			},
 			{
 				"item": "viz_MrPSBhyF",
 				"type": "block",
 				"position": {
-					"x": 710,
-					"y": 5680,
-					"w": 700,
+					"x": 20,
+					"y": 3610,
+					"w": 1400,
 					"h": 290
 				}
 			},
@@ -818,8 +853,8 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 5530,
-					"w": 670,
+					"y": 3910,
+					"w": 680,
 					"h": 130
 				}
 			},
@@ -828,7 +863,7 @@
 				"type": "block",
 				"position": {
 					"x": 250,
-					"y": 5480,
+					"y": 3580,
 					"w": 40,
 					"h": 20
 				}
@@ -838,19 +873,19 @@
 				"type": "block",
 				"position": {
 					"x": 10,
-					"y": 3580,
+					"y": 4520,
 					"w": 690,
-					"h": 260
+					"h": 240
 				}
 			},
 			{
 				"item": "viz_6Df5ems2",
 				"type": "block",
 				"position": {
-					"x": 30,
-					"y": 3630,
-					"w": 640,
-					"h": 190
+					"x": 20,
+					"y": 4570,
+					"w": 670,
+					"h": 170
 				}
 			},
 			{
@@ -864,23 +899,13 @@
 				}
 			},
 			{
-				"item": "viz_HqoRZor5",
-				"type": "block",
-				"position": {
-					"x": 720,
-					"y": 3580,
-					"w": 710,
-					"h": 260
-				}
-			},
-			{
 				"item": "viz_aRhgfKhw",
 				"type": "block",
 				"position": {
-					"x": 740,
-					"y": 3630,
-					"w": 680,
-					"h": 190
+					"x": 20,
+					"y": 4280,
+					"w": 1400,
+					"h": 220
 				}
 			},
 			{
@@ -888,8 +913,8 @@
 				"type": "block",
 				"position": {
 					"x": 710,
-					"y": 5530,
-					"w": 700,
+					"y": 3910,
+					"w": 710,
 					"h": 130
 				}
 			},
@@ -898,19 +923,19 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 5680,
-					"w": 670,
-					"h": 290
+					"y": 4050,
+					"w": 680,
+					"h": 220
 				}
 			},
 			{
 				"item": "viz_EowUtmu9",
 				"type": "block",
 				"position": {
-					"x": 20,
-					"y": 5990,
-					"w": 670,
-					"h": 320
+					"x": 710,
+					"y": 4050,
+					"w": 710,
+					"h": 220
 				}
 			},
 			{
@@ -918,9 +943,9 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 5070,
+					"y": 6250,
 					"w": 1400,
-					"h": 380
+					"h": 370
 				}
 			},
 			{
@@ -928,9 +953,9 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 4710,
+					"y": 5880,
 					"w": 1400,
-					"h": 350
+					"h": 360
 				}
 			},
 			{
@@ -938,9 +963,9 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 4340,
+					"y": 5470,
 					"w": 1400,
-					"h": 360
+					"h": 400
 				}
 			},
 			{
@@ -948,19 +973,19 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 3900,
-					"w": 680,
-					"h": 190
+					"y": 4810,
+					"w": 400,
+					"h": 160
 				}
 			},
 			{
 				"item": "viz_tbkwWLyw",
 				"type": "block",
 				"position": {
-					"x": 720,
-					"y": 3900,
-					"w": 700,
-					"h": 190
+					"x": 20,
+					"y": 4980,
+					"w": 1400,
+					"h": 230
 				}
 			},
 			{
@@ -978,9 +1003,9 @@
 				"type": "block",
 				"position": {
 					"x": 20,
-					"y": 4100,
+					"y": 5220,
 					"w": 1400,
-					"h": 230
+					"h": 240
 				}
 			},
 			{
@@ -1041,6 +1066,16 @@
 					"y": 2850,
 					"w": 1400,
 					"h": 700
+				}
+			},
+			{
+				"item": "viz_qOrUIPLg",
+				"type": "block",
+				"position": {
+					"x": 440,
+					"y": 4810,
+					"w": 400,
+					"h": 160
 				}
 			}
 		],
