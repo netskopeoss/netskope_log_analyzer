@@ -173,7 +173,7 @@
 		"ds_lLndJSn9_ds_SyuP7lQA": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"nsAppUI\" OR sourcetype=\"nsdebuglog\" (\"m_enableSecureEnrollment\" OR \"secureEnrollStatus\") \n| rex field=_raw \"(?<LogTime>\\d{4}\\/\\d{2}\\/\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3})\\s.*(?:secureEnrollStatus\\s=\\s(?<secureEnrollStatus>\\d),\\s)?m_enableSecureEnrollment\\s=\\s(?<m_enableSecureEnrollment>\\d)\"\n\n| eval m_enableSecureEnrollment_is = case(\n    m_enableSecureEnrollment=\"0\", \"Not configured\",\n    m_enableSecureEnrollment=\"1\", \"Enabled\",\n    m_enableSecureEnrollment=\"2\", \"Disabled\",\n    true(), \"\"\n)\n\n| eval secureEnrollStatus_is = case(\n    secureEnrollStatus=\"0\", \"Not configured\",\n    secureEnrollStatus=\"1\", \"Enabled\",\n    secureEnrollStatus=\"2\", \"Disabled\",\n    true(), \"\"\n)\n| eval m_enableSecureEnrollment = m_enableSecureEnrollment.\" (\".m_enableSecureEnrollment_is.\")\"\n| eval secureEnrollStatus = secureEnrollStatus.\" (\".secureEnrollStatus_is.\")\"\n\n| table LogTime, m_enableSecureEnrollment, secureEnrollStatus, sourcetype\n| sort LogTime",
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"nsAppUI\" OR sourcetype=\"nsdebuglog\" (\"m_enableSecureEnrollment\" OR \"secureEnrollStatus\") \n| rex field=_raw \"(?<LogTime>\\d{4}\\/\\d{2}\\/\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3,6})\\s.*(?:secureEnrollStatus\\s=\\s(?<secureEnrollStatus>\\d),\\s)?m_enableSecureEnrollment\\s=\\s(?<m_enableSecureEnrollment>\\d)\"\n\n| eval m_enableSecureEnrollment_is = case(\n    m_enableSecureEnrollment=\"0\", \"Not configured\",\n    m_enableSecureEnrollment=\"1\", \"Enabled\",\n    m_enableSecureEnrollment=\"2\", \"Disabled\",\n    true(), \"\"\n)\n\n| eval secureEnrollStatus_is = case(\n    secureEnrollStatus=\"0\", \"Not configured\",\n    secureEnrollStatus=\"1\", \"Enabled\",\n    secureEnrollStatus=\"2\", \"Disabled\",\n    true(), \"\"\n)\n| eval m_enableSecureEnrollment = m_enableSecureEnrollment.\" (\".m_enableSecureEnrollment_is.\")\"\n| eval secureEnrollStatus = secureEnrollStatus.\" (\".secureEnrollStatus_is.\")\"\n\n| table LogTime, m_enableSecureEnrollment, secureEnrollStatus, sourcetype\n| sort LogTime",
 				"queryParameters": {
 					"earliest": "0",
 					"latest": "now"
@@ -195,7 +195,7 @@
 		"ds_rfqCzS3k_ds_lLndJSn9_ds_SyuP7lQA": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"nsAppUI\" OR sourcetype=\"nsdebuglog\" \"validateConfig\"\n| rex field=_raw \"(?<LogTime>\\d{4}\\/\\d{2}\\/\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3})\\s.*\\s(?<validateConfig>Config\\s.*)\"\n| sort LogTime\n| dedup validateConfig\n| table LogTime, validateConfig, sourcetype",
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"nsAppUI\" OR sourcetype=\"nsdebuglog\" \"validateConfig\" AND NOT PrelogonConfig\n| rex field=_raw \"(?<LogTime>\\d{4}\\/\\d{2}\\/\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3,6})\\s.*\\s(?<validateConfig>Config\\s.*)\"\n| sort LogTime\n| dedup validateConfig\n| table LogTime, validateConfig, sourcetype",
 				"queryParameters": {
 					"earliest": "0",
 					"latest": "now"
@@ -250,7 +250,7 @@
 		"ds_VUXF18zW_ds_8tV8ORr6_ds_NuiMjyDe_ds_cRZvF6T6_ds_PJ6sECU4_ds_3BW1BQjy": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=nsinstall \"netskope*\" OR \"stagent\" OR \" ----- \"\n| sort _raw\n| table _raw\n",
+				"query": "index=netskope_client1 host=\"$field1$\" (sourcetype=nsinstall \"netskope*\" OR \"stagent\" OR \" ----- \") OR (sourcetype=\"nsAppUI\" \"*extension\")\n| sort _time\n| table _raw\n",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"
@@ -268,6 +268,28 @@
 				}
 			},
 			"name": "Secure Enrollment check copy 1"
+		},
+		"ds_bCFFK0I9_ds_HvnIp6ON_ds_LASvWJH6_ds_nPQ7im1n_ds_xwxresdO": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"nsdebuglog\" \"branding\"  OR \"nsbranding\"\n| rex field=_raw \"(?<LogTime>\\d{4}[-|\\/]\\d{2}[-|\\/]\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*\\s(?<ProcessID>p[0-9|a-f]+)\\st.*cpp:\\d+\\s+(?<MSG>.*)\" \n| stats min(LogTime) as LogTime, values(MSG) by ProcessID\n| sort LogTime",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "nsbranding download history copy 1"
+		},
+		"ds_AV3RX8IL_ds_SyuP7lQA": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"nsdebuglog\" \"SelfProtection\" AND \"PasswordProtection\"\n| rex field=_raw \"(?<LogTime>\\d{4}\\/\\d{2}\\/\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3})\\s.*SelfProtection:(?<SelfProtection>\\d),\\sPasswordProtection:(?<PasswordProtection>\\d)\"\n| eval SelfProtection = if(SelfProtection == 1, \"True\", \"False\")\n| eval PasswordProtection = if(PasswordProtection == 1, \"True\", \"False\")\n| table LogTime, SelfProtection, PasswordProtection\n| sort LogTime",
+				"queryParameters": {
+					"earliest": "$tr_n9GlxAEz.earliest$",
+					"latest": "$tr_n9GlxAEz.latest$"
+				}
+			},
+			"name": "SelfProtection History"
 		}
 	},
 	"visualizations": {
@@ -315,7 +337,7 @@
 		"viz_aRhgfKhw": {
 			"type": "splunk.table",
 			"options": {
-				"count": 100,
+				"count": 1000,
 				"dataOverlayMode": "none",
 				"drilldown": "none",
 				"showRowNumbers": false,
@@ -548,10 +570,13 @@
 						"width": 123
 					},
 					"LogTime": {
-						"width": 60
+						"width": 205
 					},
 					"ProcessID": {
-						"width": 60
+						"width": 149
+					},
+					"values(MSG)": {
+						"width": 954
 					}
 				}
 			},
@@ -584,7 +609,7 @@
 		"viz_tbkwWLyw": {
 			"type": "splunk.table",
 			"options": {
-				"count": 100,
+				"count": 1000,
 				"dataOverlayMode": "none",
 				"drilldown": "none",
 				"showRowNumbers": false,
@@ -728,6 +753,35 @@
 			"title": "Secure config validation - nsconfig",
 			"showProgressBar": false,
 			"showLastUpdated": false
+		},
+		"viz_i3Ix6yaJ": {
+			"type": "splunk.table",
+			"options": {
+				"count": 1000,
+				"dataOverlayMode": "none",
+				"drilldown": "none",
+				"showRowNumbers": false,
+				"showInternalFields": false,
+				"columnFormat": {
+					"LogTime": {
+						"width": 155
+					},
+					"idPLoggedIn": {
+						"width": 462
+					},
+					"idPModeEnabled_is": {
+						"width": 264
+					},
+					"idPModeEnabled": {
+						"width": 521
+					}
+				}
+			},
+			"dataSources": {
+				"primary": "ds_AV3RX8IL_ds_SyuP7lQA"
+			},
+			"title": "SeflProtection history",
+			"description": ""
 		}
 	},
 	"inputs": {
@@ -874,7 +928,7 @@
 				"position": {
 					"x": 10,
 					"y": 4520,
-					"w": 690,
+					"w": 1420,
 					"h": 240
 				}
 			},
@@ -884,7 +938,7 @@
 				"position": {
 					"x": 20,
 					"y": 4570,
-					"w": 670,
+					"w": 610,
 					"h": 170
 				}
 			},
@@ -1076,6 +1130,16 @@
 					"y": 4810,
 					"w": 400,
 					"h": 160
+				}
+			},
+			{
+				"item": "viz_i3Ix6yaJ",
+				"type": "block",
+				"position": {
+					"x": 650,
+					"y": 4570,
+					"w": 760,
+					"h": 170
 				}
 			}
 		],

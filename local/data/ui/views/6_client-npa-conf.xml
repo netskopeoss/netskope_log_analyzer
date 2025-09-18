@@ -162,22 +162,22 @@
 				"showInternalFields": false,
 				"columnFormat": {
 					"Policy": {
-						"width": 185
+						"width": 306
 					},
 					"Publisher": {
-						"width": 158
+						"width": 175
 					},
 					"Action": {
 						"width": 97
 					},
 					"Use_Private_DNS": {
-						"width": 87
+						"width": 145
 					},
 					"Target": {
-						"width": 690
+						"width": 719
 					},
 					"PrivateApp": {
-						"width": 222
+						"width": 232
 					}
 				}
 			},
@@ -337,13 +337,22 @@
 						"width": 96
 					},
 					"LogTime": {
-						"width": 165
+						"width": 150
 					},
 					"NpaUser": {
-						"width": 133
+						"width": 200
 					},
 					"ms": {
 						"width": 62
+					},
+					"SubnetRules": {
+						"width": 109
+					},
+					"Tenant": {
+						"width": 106
+					},
+					"SrpBytes": {
+						"width": 110
 					}
 				},
 				"count": 3000

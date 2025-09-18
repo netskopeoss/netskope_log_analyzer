@@ -305,7 +305,7 @@
 		"ds_2QlqO3sX_ds_FdRRg5Qz_ds_Cfo912F2_ds_ydLKTkRP_ds_ORP4wiSl_ds_YSgjGLGw_ds_mzmNhkaL_ds_v57DBEEj_ds_hLXoE9n0": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" (\"tunnel.cpp\" AND \"TLS Using proxy\") OR (\"Connected to\" AND \"Successfully\")\n| table _raw\n| sort _raw",
+				"query": "index=netskope_client1 host=\"$field1$\" (\"tunnel.cpp\" AND \"TLS Using proxy\") OR (\"Connected to\" AND \"Successfully\") OR \"Other steering method detected:\"\n| table _raw\n| sort _raw",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"
@@ -338,7 +338,7 @@
 		"ds_93ffU7nk_ds_FdRRg5Qz_ds_Cfo912F2_ds_ydLKTkRP_ds_ORP4wiSl_ds_YSgjGLGw_ds_mzmNhkaL_ds_v57DBEEj_ds_hLXoE9n0": {
 			"type": "ds.search",
 			"options": {
-				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"nsdebuglog\"  \"Primary tunnel source IP\"\n| rex field=_raw \"source\\sIP:\\s(?<Source>.*)\\sPrimary\\stunnel\\sdest\\sIP:\\s(?<Dst>.*)\" \n| eval Source-Dst=\"Tunnel source IP: \".Source.\" Dst IP: \".Dst\n| stats values(Source-Dst) as Source-Dst",
+				"query": "index=netskope_client1 host=\"$field1$\" sourcetype=\"nsdebuglog\" \"Primary tunnel source IP\"\n| rex field=_raw \"(?<LogTime>\\d{4}\\/\\d{2}\\/\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}).*source\\sIP:\\s(?<Source>.*)\\sPrimary\\stunnel\\sdest\\sIP:\\s(?<Dst>.*)\" \n| eval Source-Dst=\"Tunnel source IP: \".Source.\" Dst IP: \".Dst\n| sort _raw\n| table LogTime, Source-Dst\n| dedup consecutive=true Source-Dst",
 				"queryParameters": {
 					"earliest": "$tr_n9GlxAEz.earliest$",
 					"latest": "$tr_n9GlxAEz.latest$"
@@ -596,7 +596,24 @@
 			"showProgressBar": false,
 			"showLastUpdated": false,
 			"options": {
-				"count": 3000
+				"count": 3000,
+				"columnFormat": {
+					"FullProxyList": {
+						"width": 464
+					},
+					"ActiveProxyCount": {
+						"width": 209
+					},
+					"ActiveProxyList": {
+						"width": 254
+					},
+					"TotalProxyCount": {
+						"width": 161
+					},
+					"LogTime": {
+						"width": 248
+					}
+				}
 			}
 		},
 		"viz_gXvdPfFZ": {
@@ -609,7 +626,18 @@
 			"showProgressBar": false,
 			"showLastUpdated": false,
 			"options": {
-				"count": 2000
+				"count": 2000,
+				"columnFormat": {
+					"FullProxyList": {
+						"width": 91
+					},
+					"autodetect": {
+						"width": 60
+					},
+					"PAC_URL": {
+						"width": 107
+					}
+				}
 			}
 		},
 		"viz_0zQAuu81": {
@@ -714,8 +742,12 @@
 				"columnFormat": {
 					"_time": {
 						"width": 60
+					},
+					"LogTime": {
+						"width": 60
 					}
-				}
+				},
+				"count": 100
 			}
 		},
 		"viz_HS4YNFYX": {

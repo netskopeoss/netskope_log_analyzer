@@ -69,36 +69,78 @@
   </row>
   <row>
     <panel>
-      <title>NPA - Received response</title>
-      <table>
+      <chart>
         <search>
-          <query>index=netskope_publisher1 host="$field1$" "Received response for host "
-| rex field=_raw "Received\sresponse\sfor\s(?&lt;Str&gt;.*)"
-| spath input=Str
-| table _time, Str
-| sort -_time</query>
+          <query>index=netskope_publisher1 host="$field1$" "RTT endpoint ip"
+| rex field=_raw "(?&lt;LogTime&gt;\d{4}\-\d{2}\-\d{2}\s\d{2}:\d{2}:\d{2}.\d{3}).*pop:\s(?&lt;Dst&gt;.*)\sRTT.*ip\s(?&lt;IP&gt;.*)\sport.*rtt\s\=\&gt;\s(?&lt;RTT&gt;.*)" 
+| eval Stitcher=Dst."_".IP
+| stats avg(RTT) as AvgRTT by Stitcher
+| eval AvgRTT=round(AvgRTT, 2)
+| sort AvgRTT, Stitcher</query>
+          <earliest>0</earliest>
+          <latest></latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>NPA - Connected Stitcher</title>
+      <chart>
+        <search>
+          <query>index=netskope_publisher1 host="$field1$" "Connecting to Stitcher"
+| rex field=_raw "\s(?&lt;StitcherIP&gt;\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"
+| stats count by StitcherIP</query>
           <earliest>$field2.earliest$</earliest>
           <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
         </search>
-        <option name="count">10</option>
-        <option name="dataOverlayMode">none</option>
-        <option name="drilldown">none</option>
-        <option name="percentagesRow">false</option>
+        <option name="charting.chart">pie</option>
+        <option name="charting.drilldown">none</option>
         <option name="refresh.display">progressbar</option>
-        <option name="rowNumbers">false</option>
-        <option name="totalsRow">false</option>
-        <option name="wrap">true</option>
-      </table>
+      </chart>
     </panel>
     <panel>
       <title>NPA - Connected Stitcher</title>
       <table>
         <search>
-          <query>index=netskope_publisher1 host="$field1$" "Connecting to"
-| rex field=_raw "0x0\sConnecting\sto\s(?&lt;StitcherIP&gt;.*)"
-| table _time, StitcherIP
-| sort -_time</query>
+          <query>index=netskope_publisher1 host="$field1$" "SSL connection to" OR "Connecting to Stitcher"
+| rex field=_raw "(?&lt;LogTime&gt;\d{4}\-\d{2}\-\d{2}\s\d{2}:\d{2}:\d{2}.\d{3}).*0x[0-9|a-f]*\s(?&lt;StitcherIP&gt;.*)"
+| table LogTime, StitcherIP
+| sort LogTime</query>
           <earliest>$field2.earliest$</earliest>
           <latest>$field2.latest$</latest>
           <sampleRatio>1</sampleRatio>
